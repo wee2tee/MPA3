@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using DotNetDBF;
+using MPA3.Misc;
 
 namespace MPA3.Model
 {
@@ -16,6 +19,32 @@ namespace MPA3.Model
 
         public JsonModel(string docnum)
         {
+            docnum = "IV0000002";
+
+            var fDocnum = new DBFField { Name = "docnum", DataType = NativeDbType.Char, FieldLength = 12 };
+            var fEmail = new DBFField { Name = "email", DataType = NativeDbType.Char, FieldLength = 50 };
+            var fStatus = new DBFField { Name = "status", DataType = NativeDbType.Char, FieldLength = 1 };
+            Stream ws = File.Open("inv.dbf", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
+            var writer = new DBFWriter() { Fields = new[] { fDocnum, fEmail, fStatus } };
+            writer.CharEncoding = Encoding.GetEncoding(874);
+
+            using (Stream rs = File.Open("inv.dbf", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+            {
+                var inv_list = Helper.GetInvoiceList();
+                inv_list.ForEach(i => writer.AddRecord(i.docnum, i.email, i.status));
+            }
+            writer.AddRecord("iv7", "ทดสอบ@gmail.com", "1");
+            writer.AddRecord("iv8", "test@gmail.com", "2");
+            
+            using (Stream fos = File.Open("inv.dbf", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
+            {
+                writer.Write(fos);
+            }
+
+            Stream fs = File.Open("inv.dbf", FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            var reader = new DBFReader(fs);
+            reader.Fields.ToList().ForEach(f => Console.WriteLine(" ==> Field : " + f.Name));
+
             this.DocumentDetail = new DocumentDetail
             {
                 ID = string.Empty,

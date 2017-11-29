@@ -40,7 +40,7 @@ namespace MPA3
         static void Main(string[] args)
         {
             /** TEST **/
-            JsonDoc JD = new JsonDoc("IV9999999");
+            JsonDoc JD = new JsonDoc("IV0000001");
             JD.CreateJson();
 
             /* args.Length = 2 for JSON, 3 for XML, 8 for PDF */
