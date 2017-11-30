@@ -19,27 +19,12 @@ namespace MPA3.Model
 
         public JsonModel(string docnum)
         {
-            docnum = "IV0000002";
+            DataSetInv inv = new DataSetInv();
+            var inv_list = inv.GetInvList();
+            Console.WriteLine(" Total existing record : " + (inv_list != null ? inv_list.Count : 0));
 
-            var fDocnum = new DBFField { Name = "docnum", DataType = NativeDbType.Char, FieldLength = 12 };
-            var fEmail = new DBFField { Name = "email", DataType = NativeDbType.Char, FieldLength = 50 };
-            var fStatus = new DBFField { Name = "status", DataType = NativeDbType.Char, FieldLength = 1 };
-            Stream ws = File.Open("inv.dbf", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
-            var writer = new DBFWriter() { Fields = new[] { fDocnum, fEmail, fStatus } };
-            writer.CharEncoding = Encoding.GetEncoding(874);
-
-            using (Stream rs = File.Open("inv.dbf", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
-            {
-                var inv_list = Helper.GetInvoiceList();
-                inv_list.ForEach(i => writer.AddRecord(i.docnum, i.email, i.status));
-            }
-            writer.AddRecord("iv7", "ทดสอบ@gmail.com", "1");
-            writer.AddRecord("iv8", "test@gmail.com", "2");
-            
-            using (Stream fos = File.Open("inv.dbf", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite))
-            {
-                writer.Write(fos);
-            }
+            var result = inv.AddRecord(new Inv { docnum = "Ik0000002", email = "test@gmail.com", status = "0" });
+            Console.WriteLine(result.message);
 
             Stream fs = File.Open("inv.dbf", FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
             var reader = new DBFReader(fs);

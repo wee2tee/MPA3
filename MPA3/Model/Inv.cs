@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DotNetDBF;
+using System.IO;
 
 namespace MPA3.Model
 {

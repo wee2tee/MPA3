@@ -52,8 +52,13 @@
     <Compile Include="MakeDoc\JsonDoc.cs" />
     <Compile Include="MakeDoc\PdfDoc.cs" />
     <Compile Include="MakeDoc\XmlDoc.cs" />
+    <Compile Include="Model\Artrn.cs" />
+    <Compile Include="Model\DataSet.cs" />
     <Compile Include="Model\Inv.cs" />
+    <Compile Include="Model\Isinfo.cs" />
+    <Compile Include="Model\Istab.cs" />
     <Compile Include="Model\JsonModel.cs" />
+    <Compile Include="Model\Stcrd.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
