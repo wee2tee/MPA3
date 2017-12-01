@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using MPA3.MakeDoc;
+using MPA3.Model;
 //using MkX;
 //using MkP;
 
@@ -40,8 +41,19 @@ namespace MPA3
         static void Main(string[] args)
         {
             /** TEST **/
-            JsonDoc JD = new JsonDoc("IV0000001");
-            JD.CreateJson();
+            //JsonDoc JD = new JsonDoc("IV0000001");
+            //JD.CreateJson();
+            try
+            {
+                List<Inv> inv_list = DbfTable.Inv();
+                Inv inv = inv_list.Where(i => i.status == "0").First();
+                JsonModel json = new JsonModel(inv.data_path, inv.docnum);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error : " + ex.Message);
+            }
 
             /* args.Length = 2 for JSON, 3 for XML, 8 for PDF */
             if(!(args != null && (args.Length == 2 || args.Length == 3 || args.Length == 8)))

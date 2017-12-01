@@ -21,11 +21,11 @@ namespace MPA3.MakeDoc
         {
             try
             {
-                JsonModel model = new JsonModel(this.docnum);
+                //JsonModel model = new JsonModel(this.docnum);
 
-                Console.WriteLine(JsonConvert.SerializeObject(model));
-                File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "test.json", JsonConvert.SerializeObject(model, Formatting.Indented), Encoding.UTF8);
-                Console.WriteLine(" ==> " + model.ToString());
+                //Console.WriteLine(JsonConvert.SerializeObject(model));
+                //File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "test.json", JsonConvert.SerializeObject(model, Formatting.Indented), Encoding.UTF8);
+                //Console.WriteLine(" ==> " + model.ToString());
 
 
                 return new CreateJsonResult { createSuccess = true, message = "success" };

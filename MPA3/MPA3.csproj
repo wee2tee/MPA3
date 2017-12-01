@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -54,6 +54,8 @@
     <Compile Include="MakeDoc\XmlDoc.cs" />
     <Compile Include="Model\Artrn.cs" />
     <Compile Include="Model\DataSet.cs" />
+    <Compile Include="Model\DbfHelper.cs" />
+    <Compile Include="Model\DbfTable.cs" />
     <Compile Include="Model\Inv.cs" />
     <Compile Include="Model\Isinfo.cs" />
     <Compile Include="Model\Istab.cs" />

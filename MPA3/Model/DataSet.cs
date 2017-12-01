@@ -174,4 +174,9 @@ namespace MPA3.Model
             }
         }
     }
+
+    public class DataSetArtrn
+    {
+
+    }
 }

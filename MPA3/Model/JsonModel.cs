@@ -17,18 +17,36 @@ namespace MPA3.Model
         public List<RefDocs> ReferencedDocument { get; set; }
         public ApplicableHeaderTradeSettlement ApplicableHeaderTradeSettlement { get; set; }
 
-        public JsonModel(string docnum)
+        public JsonModel(string data_path, string docnum)
         {
-            DataSetInv inv = new DataSetInv();
-            var inv_list = inv.GetInvList();
-            Console.WriteLine(" Total existing record : " + (inv_list != null ? inv_list.Count : 0));
+            //List<Inv> inv_list = null;
+            //try
+            //{
+            //    inv_list = DbfTable.Inv();
+            //    Console.WriteLine("Total inv row(s) : " + (inv_list != null ? inv_list.Count : 0));
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine("Error : " + ex.Message);
+            //}
 
-            var result = inv.AddRecord(new Inv { docnum = "Ik0000002", email = "test@gmail.com", status = "0" });
-            Console.WriteLine(result.message);
+            DbfTable dbf = new DbfTable(data_path);
 
-            Stream fs = File.Open("inv.dbf", FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-            var reader = new DBFReader(fs);
-            reader.Fields.ToList().ForEach(f => Console.WriteLine(" ==> Field : " + f.Name));
+            ArtrnDbf artrn = dbf.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
+            ArmasDbf armas = dbf.Armas.Where(a => a.cuscod == artrn.cuscod).FirstOrDefault();
+            List<StcrdDbf> stcrd = dbf.Stcrd.Where(s => s.docnum == docnum).ToList();
+            List<IstabDbf> qucod = dbf.Istab.Where(i => i.tabtyp == "20" && stcrd.Select(s => s.tqucod).ToList<string>().Contains(i.typcod)).ToList();
+
+            //DataSetInv inv = new DataSetInv();
+            //var inv_list = inv.GetInvList();
+            //Console.WriteLine(" Total existing record : " + (inv_list != null ? inv_list.Count : 0));
+
+            //var result = inv.AddRecord(new Inv { docnum = "Ik0000002", email = "test@gmail.com", status = "0" });
+            //Console.WriteLine(result.message);
+
+            //Stream fs = File.Open("inv.dbf", FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
+            //var reader = new DBFReader(fs);
+            //reader.Fields.ToList().ForEach(f => Console.WriteLine(" ==> Field : " + f.Name));
 
             this.DocumentDetail = new DocumentDetail
             {
