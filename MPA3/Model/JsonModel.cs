@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using DotNetDBF;
 using MPA3.Misc;
+using Newtonsoft.Json;
+using System.Globalization;
 
 namespace MPA3.Model
 {
@@ -19,17 +21,6 @@ namespace MPA3.Model
 
         public JsonModel(string data_path, string docnum)
         {
-            //List<Inv> inv_list = null;
-            //try
-            //{
-            //    inv_list = DbfTable.Inv();
-            //    Console.WriteLine("Total inv row(s) : " + (inv_list != null ? inv_list.Count : 0));
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine("Error : " + ex.Message);
-            //}
-
             DbfTable dbf = new DbfTable(data_path);
 
             ArtrnDbf artrn = dbf.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
@@ -37,22 +28,11 @@ namespace MPA3.Model
             List<StcrdDbf> stcrd = dbf.Stcrd.Where(s => s.docnum == docnum).ToList();
             List<IstabDbf> qucod = dbf.Istab.Where(i => i.tabtyp == "20" && stcrd.Select(s => s.tqucod).ToList<string>().Contains(i.typcod)).ToList();
 
-            //DataSetInv inv = new DataSetInv();
-            //var inv_list = inv.GetInvList();
-            //Console.WriteLine(" Total existing record : " + (inv_list != null ? inv_list.Count : 0));
-
-            //var result = inv.AddRecord(new Inv { docnum = "Ik0000002", email = "test@gmail.com", status = "0" });
-            //Console.WriteLine(result.message);
-
-            //Stream fs = File.Open("inv.dbf", FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-            //var reader = new DBFReader(fs);
-            //reader.Fields.ToList().ForEach(f => Console.WriteLine(" ==> Field : " + f.Name));
-
             this.DocumentDetail = new DocumentDetail
             {
-                ID = string.Empty,
-                CreationDateTime = string.Empty,
-                IssueDateTime = string.Empty,
+                ID = artrn.docnum, //string.Empty,
+                CreationDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")), //string.Empty,
+                IssueDateTime = artrn.docdat.Value.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")), //string.Empty,
                 SpecifiedCIDocument = string.Empty,
                 Name = string.Empty,
                 TypeCode = string.Empty,
@@ -135,6 +115,31 @@ namespace MPA3.Model
                 }
             };
         }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
+        }
+
+        public CreateJsonResult WriteToFile(string destination_file_path)
+        {
+            try
+            {
+                var dest_file = destination_file_path.EndsWith(".json") ? destination_file_path : destination_file_path + ".json";
+                File.WriteAllText(dest_file, this.ToString(), Encoding.UTF8);
+                return new CreateJsonResult { createSuccess = true, message = "success" };
+            }
+            catch (Exception ex)
+            {
+                return new CreateJsonResult { createSuccess = false, message = ex.Message };
+            }
+        }
+    }
+
+    public class CreateJsonResult
+    {
+        public bool createSuccess { get; set; }
+        public string message { get; set; }
     }
 
     public class DocumentDetail

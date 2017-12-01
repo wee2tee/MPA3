@@ -41,22 +41,24 @@ namespace MPA3
         static void Main(string[] args)
         {
             /** TEST **/
-            //JsonDoc JD = new JsonDoc("IV0000001");
-            //JD.CreateJson();
-            try
-            {
-                List<Inv> inv_list = DbfTable.Inv();
-                Inv inv = inv_list.Where(i => i.status == "0").First();
-                JsonModel json = new JsonModel(inv.data_path, inv.docnum);
+            //try
+            //{
+            //    List<Inv> inv_list = DbfTable.Inv();
+            //    Inv inv = inv_list.Where(i => i.status == "0").First();
+            //    JsonModel json = new JsonModel(inv.data_path, inv.docnum);
 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error : " + ex.Message);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine("Error : " + ex.Message);
+            //}
 
-            /* args.Length = 2 for JSON, 3 for XML, 8 for PDF */
-            if(!(args != null && (args.Length == 2 || args.Length == 3 || args.Length == 8)))
+            
+            
+            
+            
+            /* args.Length = 3 for JSON/XML, 8 for PDF */
+            if(!(args != null && (/*args.Length == 2 || */args.Length == 3 || args.Length == 8)))
             {
                 Console.WriteLine("Error : Arguments not specified completely!");
                 return;
@@ -74,14 +76,34 @@ namespace MPA3
                     // Create JSON file
                     if(args[0].ToUpper().Trim() == PROCESS_TYPE.JSON.ToString())
                     {
-                        if (args.Length < 2)
+                        if (args.Length < 3)
                         {
                             Console.WriteLine("Error : Arguments not specified completely!");
                             return;
                         }
 
-                        string docnum = args[1];
-                        Console.WriteLine("Docnum : " + docnum);
+                        string data_path = args[1];
+                        string docnum = args[2];
+                        DbfTable dbf = new DbfTable(data_path);
+                        var artrn = dbf.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
+                        if(artrn != null)
+                        {
+                            JsonModel json = new JsonModel(data_path, docnum);
+                            var result = json.WriteToFile(@"json\" + docnum + ".json");
+                            if (result.createSuccess)
+                            {
+                                Console.WriteLine("Success");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Error : " + result.message);
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error : document # " + docnum + " not found");
+                        }
+                        
                         return;
                     }
 
@@ -102,11 +124,11 @@ namespace MPA3
 
                         if (result.createSuccess)
                         {
-                            Console.WriteLine("OK");
+                            Console.WriteLine("Success");
                         }
                         else
                         {
-                            Console.WriteLine("Fail! , " + result.message);
+                            Console.WriteLine("Error : " + result.message);
                         }
                         return;
                     }
@@ -133,11 +155,11 @@ namespace MPA3
 
                         if (result.createSuccess)
                         {
-                            Console.WriteLine("OK");
+                            Console.WriteLine("Success");
                         }
                         else
                         {
-                            Console.WriteLine("Fail! , " + result.message);
+                            Console.WriteLine("Error : " + result.message);
                         }
                         return;
                     }

@@ -16,7 +16,6 @@ namespace MPA3.Model
         public DbfTable(string data_path)
         {
             this.data_path = data_path.Trim();
-            Console.WriteLine(this.data_path);
         }
 
         public bool IsDataFileExist(string file_name)
