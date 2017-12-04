@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace MPA3.Model
@@ -112,7 +113,7 @@ namespace MPA3.Model
         //}
         #endregion Scuser, Scacclv, Sccomp
 
-        #region Isprd, Isrun
+        #region Isprd
         //public static IsprdDbf ToIsprd(this DataTable dt_isprd)
         //{
         //    IsprdDbf isprd = new IsprdDbf
@@ -196,71 +197,7 @@ namespace MPA3.Model
         //    return isprd;
 
         //}
-
-        //public static List<IsrunDbf> ToIsrunList(this DataTable isrun_dbf)
-        //{
-        //    List<IsrunDbf> isrun = new List<IsrunDbf>();
-
-        //    foreach (DataRow row in isrun_dbf.Rows)
-        //    {
-        //        try
-        //        {
-        //            IsrunDbf i = new IsrunDbf
-        //            {
-        //                doctyp = !(row.IsNull("doctyp")) ? row.Field<string>("doctyp") : string.Empty,
-        //                doccod = !(row.IsNull("doccod")) ? row.Field<string>("doccod") : string.Empty,
-        //                shortnam = !(row.IsNull("shortnam")) ? row.Field<string>("shortnam") : string.Empty,
-        //                posdes = !(row.IsNull("posdes")) ? row.Field<string>("posdes") : string.Empty,
-        //                posdes2 = !(row.IsNull("posdes2")) ? row.Field<string>("posdes2") : string.Empty,
-        //                prefix = !(row.IsNull("prefix")) ? row.Field<string>("prefix") : string.Empty,
-        //                docnum = !(row.IsNull("docnum")) ? row.Field<string>("docnum") : string.Empty,
-        //                ismodify = !(row.IsNull("ismodify")) ? row.Field<bool>("ismodify") : false,
-        //                depcod = !(row.IsNull("depcod")) ? row.Field<string>("depcod") : string.Empty,
-        //                jnltyp = !(row.IsNull("jnltyp")) ? row.Field<string>("jnltyp") : string.Empty,
-        //                jnlexp = !(row.IsNull("jnlexp")) ? row.Field<string>("jnlexp") : string.Empty,
-        //                accnum01 = !(row.IsNull("accnum01")) ? row.Field<string>("accnum01") : string.Empty,
-        //                accnum02 = !(row.IsNull("accnum02")) ? row.Field<string>("accnum02") : string.Empty,
-        //                accnum03 = !(row.IsNull("accnum03")) ? row.Field<string>("accnum03") : string.Empty,
-        //                accnum04 = !(row.IsNull("accnum04")) ? row.Field<string>("accnum04") : string.Empty,
-        //                accnum05 = !(row.IsNull("accnum05")) ? row.Field<string>("accnum05") : string.Empty,
-        //                accnum06 = !(row.IsNull("accnum06")) ? row.Field<string>("accnum06") : string.Empty,
-        //                accnum07 = !(row.IsNull("accnum07")) ? row.Field<string>("accnum07") : string.Empty,
-        //                accnum08 = !(row.IsNull("accnum08")) ? row.Field<string>("accnum08") : string.Empty,
-        //                accnum09 = !(row.IsNull("accnum09")) ? row.Field<string>("accnum09") : string.Empty,
-        //                accnum10 = !(row.IsNull("accnum10")) ? row.Field<string>("accnum10") : string.Empty,
-        //                accnum11 = !(row.IsNull("accnum11")) ? row.Field<string>("accnum11") : string.Empty,
-        //                accnum12 = !(row.IsNull("accnum12")) ? row.Field<string>("accnum12") : string.Empty,
-        //                flgvat = !(row.IsNull("flgvat")) ? row.Field<string>("flgvat") : string.Empty,
-        //                vatrat = !(row.IsNull("vatrat")) ? row.Field<decimal>("vatrat") : 0m,
-        //                srv_vattyp = !(row.IsNull("srv_vattyp")) ? row.Field<string>("srv_vattyp") : string.Empty,
-        //                autoprn = !(row.IsNull("autoprn")) ? row.Field<string>("autoprn") : string.Empty,
-        //                whichform = !(row.IsNull("whichform")) ? row.Field<string>("whichform") : string.Empty,
-        //                reprn_lev = !(row.IsNull("reprn_lev")) ? row.Field<string>("reprn_lev") : string.Empty,
-        //                cancel_lev = !(row.IsNull("cancel_lev")) ? row.Field<string>("cancel_lev") : string.Empty,
-        //                delete_lev = !(row.IsNull("delete_lev")) ? row.Field<string>("delete_lev") : string.Empty,
-        //                approv_met = !(row.IsNull("approv_met")) ? row.Field<string>("approv_met") : string.Empty,
-        //                approv_lev = !(row.IsNull("approv_lev")) ? row.Field<string>("approv_lev") : string.Empty,
-        //                ovrlin_lev = !(row.IsNull("ovrlin_lev")) ? row.Field<string>("ovrlin_lev") : string.Empty,
-        //                vat_initem = !(row.IsNull("vat_initem")) ? row.Field<string>("vat_initem") : string.Empty,
-        //                loccod = !(row.IsNull("loccod")) ? row.Field<string>("loccod") : string.Empty,
-        //                usebarcod = !(row.IsNull("usebarcod")) ? row.Field<string>("usebarcod") : string.Empty,
-        //                pvatprorat = !(row.IsNull("pvatprorat")) ? row.Field<string>("pvatprorat") : string.Empty,
-        //                reserve1 = !(row.IsNull("reserve1")) ? row.Field<string>("reserve1") : string.Empty,
-        //                reserve2 = !(row.IsNull("reserve2")) ? row.Field<string>("reserve2") : string.Empty,
-        //                reserve3 = !(row.IsNull("reserve3")) ? row.Field<double>("reserve3") : 0d
-        //            };
-
-        //            isrun.Add(i);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            continue;
-        //        }
-        //    }
-
-        //    return isrun;
-        //}
-        #endregion Isprd, Isrun
+        #endregion Isprd
 
         public static List<Inv> ToInvList(this DataTable inv_dbf)
         {
@@ -286,6 +223,70 @@ namespace MPA3.Model
             }
 
             return inv;
+        }
+
+        public static List<IsrunDbf> ToIsrunList(this DataTable isrun_dbf)
+        {
+            List<IsrunDbf> isrun = new List<IsrunDbf>();
+
+            foreach (DataRow row in isrun_dbf.Rows)
+            {
+                try
+                {
+                    IsrunDbf i = new IsrunDbf
+                    {
+                        doctyp = !(row.IsNull("doctyp")) ? row.Field<string>("doctyp").Trim() : string.Empty,
+                        doccod = !(row.IsNull("doccod")) ? row.Field<string>("doccod").Trim() : string.Empty,
+                        shortnam = !(row.IsNull("shortnam")) ? row.Field<string>("shortnam").Trim() : string.Empty,
+                        posdes = !(row.IsNull("posdes")) ? row.Field<string>("posdes").Trim() : string.Empty,
+                        posdes2 = !(row.IsNull("posdes2")) ? row.Field<string>("posdes2").Trim() : string.Empty,
+                        prefix = !(row.IsNull("prefix")) ? row.Field<string>("prefix").Trim() : string.Empty,
+                        docnum = !(row.IsNull("docnum")) ? row.Field<string>("docnum").Trim() : string.Empty,
+                        ismodify = !(row.IsNull("ismodify")) ? row.Field<bool>("ismodify") : false,
+                        depcod = !(row.IsNull("depcod")) ? row.Field<string>("depcod").Trim() : string.Empty,
+                        jnltyp = !(row.IsNull("jnltyp")) ? row.Field<string>("jnltyp").Trim() : string.Empty,
+                        jnlexp = !(row.IsNull("jnlexp")) ? row.Field<string>("jnlexp").Trim() : string.Empty,
+                        accnum01 = !(row.IsNull("accnum01")) ? row.Field<string>("accnum01").Trim() : string.Empty,
+                        accnum02 = !(row.IsNull("accnum02")) ? row.Field<string>("accnum02").Trim() : string.Empty,
+                        accnum03 = !(row.IsNull("accnum03")) ? row.Field<string>("accnum03").Trim() : string.Empty,
+                        accnum04 = !(row.IsNull("accnum04")) ? row.Field<string>("accnum04").Trim() : string.Empty,
+                        accnum05 = !(row.IsNull("accnum05")) ? row.Field<string>("accnum05").Trim() : string.Empty,
+                        accnum06 = !(row.IsNull("accnum06")) ? row.Field<string>("accnum06").Trim() : string.Empty,
+                        accnum07 = !(row.IsNull("accnum07")) ? row.Field<string>("accnum07").Trim() : string.Empty,
+                        accnum08 = !(row.IsNull("accnum08")) ? row.Field<string>("accnum08").Trim() : string.Empty,
+                        accnum09 = !(row.IsNull("accnum09")) ? row.Field<string>("accnum09").Trim() : string.Empty,
+                        accnum10 = !(row.IsNull("accnum10")) ? row.Field<string>("accnum10").Trim() : string.Empty,
+                        accnum11 = !(row.IsNull("accnum11")) ? row.Field<string>("accnum11").Trim() : string.Empty,
+                        accnum12 = !(row.IsNull("accnum12")) ? row.Field<string>("accnum12").Trim() : string.Empty,
+                        flgvat = !(row.IsNull("flgvat")) ? row.Field<string>("flgvat").Trim() : string.Empty,
+                        vatrat = !(row.IsNull("vatrat")) ? row.Field<decimal>("vatrat") : 0m,
+                        srv_vattyp = !(row.IsNull("srv_vattyp")) ? row.Field<string>("srv_vattyp").Trim() : string.Empty,
+                        autoprn = !(row.IsNull("autoprn")) ? row.Field<string>("autoprn").Trim() : string.Empty,
+                        whichform = !(row.IsNull("whichform")) ? row.Field<string>("whichform").Trim() : string.Empty,
+                        reprn_lev = !(row.IsNull("reprn_lev")) ? row.Field<string>("reprn_lev").Trim() : string.Empty,
+                        cancel_lev = !(row.IsNull("cancel_lev")) ? row.Field<string>("cancel_lev").Trim() : string.Empty,
+                        delete_lev = !(row.IsNull("delete_lev")) ? row.Field<string>("delete_lev").Trim() : string.Empty,
+                        approv_met = !(row.IsNull("approv_met")) ? row.Field<string>("approv_met").Trim() : string.Empty,
+                        approv_lev = !(row.IsNull("approv_lev")) ? row.Field<string>("approv_lev").Trim() : string.Empty,
+                        ovrlin_lev = !(row.IsNull("ovrlin_lev")) ? row.Field<string>("ovrlin_lev").Trim() : string.Empty,
+                        vat_initem = !(row.IsNull("vat_initem")) ? row.Field<string>("vat_initem").Trim() : string.Empty,
+                        loccod = !(row.IsNull("loccod")) ? row.Field<string>("loccod").Trim() : string.Empty,
+                        usebarcod = !(row.IsNull("usebarcod")) ? row.Field<string>("usebarcod").Trim() : string.Empty,
+                        pvatprorat = !(row.IsNull("pvatprorat")) ? row.Field<string>("pvatprorat").Trim() : string.Empty,
+                        reserve1 = !(row.IsNull("reserve1")) ? row.Field<string>("reserve1").Trim() : string.Empty,
+                        reserve2 = !(row.IsNull("reserve2")) ? row.Field<string>("reserve2").Trim() : string.Empty,
+                        reserve3 = !(row.IsNull("reserve3")) ? row.Field<double>("reserve3") : 0d
+                    };
+
+                    isrun.Add(i);
+                }
+                catch (Exception ex)
+                {
+                    continue;
+                }
+            }
+
+            return isrun;
         }
 
         public static List<IstabDbf> ToIstabList(this DataTable istab_dbf)
@@ -972,5 +973,204 @@ namespace MPA3.Model
 
             return armas;
         }
+
+        // Conver general datatable to List<T> (for isinfo)
+        public static List<T> ToList<T>(this DataTable table) where T : class, new()
+        {
+            try
+            {
+                List<T> list = new List<T>();
+
+                foreach (var row in table.AsEnumerable())
+                {
+                    T obj = new T();
+
+                    foreach (var prop in obj.GetType().GetProperties())
+                    {
+                        try
+                        {
+                            PropertyInfo propertyInfo = obj.GetType().GetProperty(prop.Name);
+                            if (propertyInfo.PropertyType == typeof(string))
+                            {
+                                propertyInfo.SetValue(obj, ((string)Convert.ChangeType(row[prop.Name], propertyInfo.PropertyType)).Trim(), null);
+                            }
+                            else if (propertyInfo.PropertyType.FullName.Contains("DateTime"))
+                            {
+                                propertyInfo.SetValue(obj, ((DateTime?)Convert.ChangeType(row[prop.Name], typeof(DateTime))), null);
+                            }
+                            else
+                            {
+                                propertyInfo.SetValue(obj, Convert.ChangeType(row[prop.Name], propertyInfo.PropertyType), null);
+                            }
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+
+                    list.Add(obj);
+                }
+
+                return list;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static string GetZipcod(this IsinfoDbf isinfo)
+        {
+            string[] nums = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+
+            if (isinfo.addr02.Trim().Length > 0) // get zipcod from addr02
+            {
+                string str = isinfo.addr02.Trim().Substring(isinfo.addr02.Trim().Length - 5);
+                foreach (char c in str.ToCharArray())
+                {
+                    if (nums.Contains(c.ToString()))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        return string.Empty;
+                    }
+                }
+
+                return str;
+            }
+            else // get zipcod from addr01
+            {
+                try
+                {
+                    string str = isinfo.addr01.Trim().Substring(isinfo.addr01.Trim().Length - 5);
+                    foreach (char c in str.ToCharArray())
+                    {
+                        if (nums.Contains(c.ToString()))
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            return string.Empty;
+                        }
+                    }
+
+                    return str;
+                }
+                catch (Exception)
+                {
+                    return string.Empty;
+                }
+            }
+        }
+
+        public static TelFaxNumber GetTelFax(this ArmasDbf armas)
+        {
+            string[] arr_str = new string[] { "(", ")", "-", ",", "#", "ext", "ext.", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+            var tf = armas.telnum.ToLower().Split(new[] { "fax" }, StringSplitOptions.None);
+
+            string tel = string.Empty;
+            string fax = string.Empty;
+
+            if(tf.Length >= 1)
+            {
+                foreach (char c in tf[0].ToCharArray())
+                {
+                    if (arr_str.Contains(c.ToString()))
+                    {
+                        tel += c.ToString();
+                    }
+                }
+            }
+
+            if(tf.Length > 1)
+            {
+                foreach (char c in tf[1].ToCharArray())
+                {
+                    if (arr_str.Contains(c.ToString()))
+                    {
+                        fax += c.ToString();
+                    }
+                }
+            }
+
+            return new TelFaxNumber { telNum = tel, faxNum = fax };
+        }
+
+        public static TelFaxNumber GetTelFax(this IsinfoDbf isinfo)
+        {
+            string[] arr_str = new string[] { "(", ")", "-", ",", "#", "ext", "ext.", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+            var tf = isinfo.telnum.ToLower().Split(new[] { "fax" }, StringSplitOptions.None);
+
+            string tel = string.Empty;
+            string fax = string.Empty;
+
+            if (tf.Length >= 1)
+            {
+                foreach (char c in tf[0].ToCharArray())
+                {
+                    if (arr_str.Contains(c.ToString()))
+                    {
+                        tel += c.ToString();
+                    }
+                }
+            }
+
+            if (tf.Length > 1)
+            {
+                foreach (char c in tf[1].ToCharArray())
+                {
+                    if (arr_str.Contains(c.ToString()))
+                    {
+                        fax += c.ToString();
+                    }
+                }
+            }
+
+            return new TelFaxNumber { telNum = tel, faxNum = fax };
+        }
+
+        public static string GetOrgnumString(this ArmasDbf armas)
+        {
+            if (armas.orgnum == 0)
+                return "00000";
+
+            string orgnum = armas.orgnum.ToString();
+
+            string str_orgnum = string.Empty;
+            for (int i = 0; i < 5 - orgnum.Length; i++)
+            {
+                str_orgnum += "0";
+            }
+            str_orgnum += orgnum;
+
+            return str_orgnum;
+        }
+
+        public static string GetOrgnumString(this IsinfoDbf isinfo)
+        {
+            if (isinfo.orgnum == 0)
+                return "00000";
+
+            string orgnum = isinfo.orgnum.ToString();
+
+            string str_orgnum = string.Empty;
+            for (int i = 0; i < 5 - orgnum.Length; i++)
+            {
+                str_orgnum += "0";
+            }
+            str_orgnum += orgnum;
+
+            return str_orgnum;
+        }
+    }
+
+    public class TelFaxNumber
+    {
+        public string telNum { get; set; }
+        public string faxNum { get; set; }
     }
 }

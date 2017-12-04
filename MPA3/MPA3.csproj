@@ -56,11 +56,15 @@
     <Compile Include="Model\DbfTable.cs" />
     <Compile Include="Model\Inv.cs" />
     <Compile Include="Model\JsonModel.cs" />
+    <Compile Include="Model\StdCode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Res\Countries.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

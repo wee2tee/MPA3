@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using MPA3.MakeDoc;
 using MPA3.Model;
+using Newtonsoft.Json;
+using System.IO;
 //using MkX;
 //using MkP;
 
@@ -53,12 +55,8 @@ namespace MPA3
             //    Console.WriteLine("Error : " + ex.Message);
             //}
 
-            
-            
-            
-            
             /* args.Length = 3 for JSON/XML, 8 for PDF */
-            if(!(args != null && (/*args.Length == 2 || */args.Length == 3 || args.Length == 8)))
+            if (!(args != null && (/*args.Length == 2 || */args.Length == 3 || args.Length == 8)))
             {
                 Console.WriteLine("Error : Arguments not specified completely!");
                 return;
@@ -74,7 +72,7 @@ namespace MPA3
                 try
                 {
                     // Create JSON file
-                    if(args[0].ToUpper().Trim() == PROCESS_TYPE.JSON.ToString())
+                    if (args[0].ToUpper().Trim() == PROCESS_TYPE.JSON.ToString())
                     {
                         if (args.Length < 3)
                         {
@@ -86,7 +84,7 @@ namespace MPA3
                         string docnum = args[2];
                         DbfTable dbf = new DbfTable(data_path);
                         var artrn = dbf.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
-                        if(artrn != null)
+                        if (artrn != null)
                         {
                             JsonModel json = new JsonModel(data_path, docnum);
                             var result = json.WriteToFile(@"json\" + docnum + ".json");
@@ -103,12 +101,12 @@ namespace MPA3
                         {
                             Console.WriteLine("Error : document # " + docnum + " not found");
                         }
-                        
+
                         return;
                     }
 
                     // Create XML file
-                    if(args[0].ToUpper().Trim() == PROCESS_TYPE.XML.ToString())
+                    if (args[0].ToUpper().Trim() == PROCESS_TYPE.XML.ToString())
                     {
                         if(args.Length < 3)
                         {
@@ -170,7 +168,5 @@ namespace MPA3
                 }
             }
         }
-
-        
     }
 }

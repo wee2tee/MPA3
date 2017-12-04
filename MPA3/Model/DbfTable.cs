@@ -164,72 +164,6 @@ namespace MPA3.Model
         //}
         #endregion Isprd, Scuser, Scacclv, Sccomp
 
-        #region Isrun, Isinfo
-        //public static DataTable Isrun(SccompDbf working_express_db)
-        //{
-        //    string data_path = working_express_db.abs_path; //GetExpressDataPath();
-
-        //    if (!(Directory.Exists(data_path) && File.Exists(data_path + "isrun.dbf")))
-        //    {
-        //        XMessageBox.Show("ค้นหาแฟ้ม Isrun.dbf ในที่เก็บข้อมูล \"" + data_path + "\" ไม่พบ", "Error", MessageBoxButtons.OK, XMessageBoxIcon.Stop);
-        //        return new DataTable();
-        //    }
-
-        //    DataTable dt = new DataTable();
-
-        //    OleDbConnection conn = new OleDbConnection(
-        //        @"Provider=VFPOLEDB.1;Data Source=" + data_path);
-
-        //    conn.Open();
-
-        //    if (conn.State == ConnectionState.Open)
-        //    {
-        //        string mySQL = "select * from Isrun";
-
-        //        OleDbCommand cmd = new OleDbCommand(mySQL, conn);
-        //        OleDbDataAdapter DA = new OleDbDataAdapter(cmd);
-
-        //        DA.Fill(dt);
-
-        //        conn.Close();
-        //    }
-
-        //    return dt;
-        //}
-
-        //public static DataTable Isinfo(SccompDbf working_express_db)
-        //{
-        //    string data_path = working_express_db.abs_path; // GetExpressDataPath();
-
-        //    if (!(Directory.Exists(data_path) && File.Exists(data_path + "isinfo.dbf")))
-        //    {
-        //        XMessageBox.Show("ค้นหาแฟ้ม Isinfo.dbf ในที่เก็บข้อมูล \"" + data_path + "\" ไม่พบ", "Error", MessageBoxButtons.OK, XMessageBoxIcon.Stop);
-        //        return new DataTable();
-        //    }
-
-        //    DataTable dt = new DataTable();
-
-        //    OleDbConnection conn = new OleDbConnection(
-        //        @"Provider=VFPOLEDB.1;Data Source=" + data_path);
-
-        //    conn.Open();
-
-        //    if (conn.State == ConnectionState.Open)
-        //    {
-        //        string mySQL = "select * from Isinfo";
-
-        //        OleDbCommand cmd = new OleDbCommand(mySQL, conn);
-        //        OleDbDataAdapter DA = new OleDbDataAdapter(cmd);
-
-        //        DA.Fill(dt);
-
-        //        conn.Close();
-        //    }
-
-        //    return dt;
-        //}
-        #endregion Isrun, Isinfo
-
         public static List<Inv> Inv(string inv_dbf_file_path = "inv.dbf")
         {
             if (!File.Exists(inv_dbf_file_path))
@@ -260,6 +194,72 @@ namespace MPA3.Model
             }
 
             return dt.ToInvList();
+        }
+
+        public IsinfoDbf Isinfo
+        {
+            get
+            {
+                if (!(Directory.Exists(this.data_path) && File.Exists(this.data_path + @"\isinfo.dbf")))
+                {
+                    Console.WriteLine("Cannot find the file \"isinfo.dbf\" in directory \"" + this.data_path + "\"");
+                    return null;
+                }
+
+                DataTable dt = new DataTable();
+
+                OleDbConnection conn = new OleDbConnection(
+                    @"Provider=VFPOLEDB.1;Data Source=" + this.data_path);
+
+                conn.Open();
+
+                if (conn.State == ConnectionState.Open)
+                {
+                    string mySQL = "select * from Isinfo";
+
+                    OleDbCommand cmd = new OleDbCommand(mySQL, conn);
+                    OleDbDataAdapter DA = new OleDbDataAdapter(cmd);
+
+                    DA.Fill(dt);
+
+                    conn.Close();
+                }
+
+                return dt.ToList<IsinfoDbf>().FirstOrDefault();
+            }
+        }
+
+        public List<IsrunDbf> Isrun
+        {
+            get
+            {
+                if (!(Directory.Exists(this.data_path) && File.Exists(this.data_path + @"\isrun.dbf")))
+                {
+                    Console.WriteLine("Cannot find the file \"isrun.dbf\" in directory \"" + this.data_path + "\"");
+                    return null;
+                }
+
+                DataTable dt = new DataTable();
+
+                OleDbConnection conn = new OleDbConnection(
+                    @"Provider=VFPOLEDB.1;Data Source=" + this.data_path);
+
+                conn.Open();
+
+                if (conn.State == ConnectionState.Open)
+                {
+                    string mySQL = "select * from Isrun";
+
+                    OleDbCommand cmd = new OleDbCommand(mySQL, conn);
+                    OleDbDataAdapter DA = new OleDbDataAdapter(cmd);
+
+                    DA.Fill(dt);
+
+                    conn.Close();
+                }
+
+                return dt.ToIsrunList();
+            }
         }
 
         public List<IstabDbf> Istab
@@ -394,38 +394,6 @@ namespace MPA3.Model
             }
         }
 
-        //public static DataTable Apmas(SccompDbf working_express_db)
-        //{
-        //    string data_path = working_express_db.abs_path; // GetExpressDataPath();
-
-        //    if (!(Directory.Exists(data_path) && File.Exists(data_path + "apmas.dbf")))
-        //    {
-        //        XMessageBox.Show("ค้นหาแฟ้ม Apmas.dbf ในที่เก็บข้อมูล \"" + data_path + "\" ไม่พบ", "Error", MessageBoxButtons.OK, XMessageBoxIcon.Stop);
-        //        return new DataTable();
-        //    }
-
-        //    DataTable dt = new DataTable();
-
-        //    OleDbConnection conn = new OleDbConnection(
-        //        @"Provider=VFPOLEDB.1;Data Source=" + data_path);
-
-        //    conn.Open();
-
-        //    if (conn.State == ConnectionState.Open)
-        //    {
-        //        string mySQL = "select * from apmas";
-
-        //        OleDbCommand cmd = new OleDbCommand(mySQL, conn);
-        //        OleDbDataAdapter DA = new OleDbDataAdapter(cmd);
-
-        //        DA.Fill(dt);
-
-        //        conn.Close();
-        //    }
-
-        //    return dt;
-        //}
-
         //public static DataTable Aptrn(SccompDbf working_express_db)
         //{
         //    string data_path = working_express_db.abs_path; // GetExpressDataPath();
@@ -521,6 +489,40 @@ namespace MPA3.Model
                 }
 
                 return dt.ToArmasList();
+            }
+        }
+
+        public List<ApmasDbf> Apmas
+        {
+            get
+            {
+                if (!(Directory.Exists(data_path) && File.Exists(data_path + @"\apmas.dbf")))
+                {
+                    //XMessageBox.Show("ค้นหาแฟ้ม Apmas.dbf ในที่เก็บข้อมูล \"" + data_path + "\" ไม่พบ", "Error", MessageBoxButtons.OK, XMessageBoxIcon.Stop);
+                    Console.WriteLine("Cannot find the file \"apmas.dbf\" in directory \"" + this.data_path + "\"");
+                    return null;
+                }
+
+                DataTable dt = new DataTable();
+
+                OleDbConnection conn = new OleDbConnection(
+                    @"Provider=VFPOLEDB.1;Data Source=" + data_path);
+
+                conn.Open();
+
+                if (conn.State == ConnectionState.Open)
+                {
+                    string mySQL = "select * from apmas";
+
+                    OleDbCommand cmd = new OleDbCommand(mySQL, conn);
+                    OleDbDataAdapter DA = new OleDbDataAdapter(cmd);
+
+                    DA.Fill(dt);
+
+                    conn.Close();
+                }
+
+                return dt.ToApmasList();
             }
         }
     }

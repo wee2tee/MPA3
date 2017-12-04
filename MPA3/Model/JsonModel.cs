@@ -8,10 +8,18 @@ using MPA3.Misc;
 using Newtonsoft.Json;
 using System.Globalization;
 
+
 namespace MPA3.Model
 {
     public class JsonModel
     {
+        private enum VAT_TYPE : int
+        {
+            ACQUISITION = 1,
+            CASH_BASIS = 2
+        }
+        private List<Country> countries;
+
         public DocumentDetail DocumentDetail { get; set; }
         public SellerTradeParty SellerTradeParty { get; set; }
         public BuyerTradeParty BuyerTradeParty { get; set; }
@@ -23,24 +31,65 @@ namespace MPA3.Model
         {
             DbfTable dbf = new DbfTable(data_path);
 
+            IsinfoDbf isinfo = dbf.Isinfo;
             ArtrnDbf artrn = dbf.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
             ArmasDbf armas = dbf.Armas.Where(a => a.cuscod == artrn.cuscod).FirstOrDefault();
             List<StcrdDbf> stcrd = dbf.Stcrd.Where(s => s.docnum == docnum).ToList();
             List<IstabDbf> qucod = dbf.Istab.Where(i => i.tabtyp == "20" && stcrd.Select(s => s.tqucod).ToList<string>().Contains(i.typcod)).ToList();
+            IsrunDbf isrun = dbf.Isrun.Where(i => i.doctyp == docnum.Substring(0, 2)).FirstOrDefault();
+            StdDocumentName docName = null;
+            #region docName
+            if (isrun != null)
+            {
+                switch (isrun.doctyp)
+                {
+                    case "IV":
+                        if(artrn.srv_vattyp == ((int)VAT_TYPE.ACQUISITION).ToString() && artrn.vatamt > 0)
+                        {
+                            docName = new StdDocumentName(StdDocumentName.TYPE._T02);
+                        }
+                        else
+                        {
+                            docName = new StdDocumentName(StdDocumentName.TYPE._380);
+                        }
+                        break;
+
+                    case "HS":
+                        docName = new StdDocumentName(StdDocumentName.TYPE._T03);
+                        break;
+
+                    case "SR":
+                        docName = new StdDocumentName(StdDocumentName.TYPE._81);
+                        break;
+
+                    case "DR":
+                        docName = new StdDocumentName(StdDocumentName.TYPE._80);
+                        break;
+
+                    default:
+                        docName = new StdDocumentName(StdDocumentName.TYPE._388);
+                        break;
+                }
+            }
+            #endregion docName
+            using (StreamReader rdr = File.OpenText(@"Res\Countries.json"))
+            {
+                countries = (List<Country>)new JsonSerializer().Deserialize(rdr, typeof(List<Country>));
+            }
 
             this.DocumentDetail = new DocumentDetail
             {
-                ID = artrn.docnum, //string.Empty,
-                CreationDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")), //string.Empty,
-                IssueDateTime = artrn.docdat.Value.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")), //string.Empty,
-                SpecifiedCIDocument = string.Empty,
-                Name = string.Empty,
-                TypeCode = string.Empty,
-                Purpose = string.Empty,
+                ID = artrn.docnum,
+                CreationDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")),
+                IssueDateTime = artrn.docdat.Value.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")),
+                SpecifiedCIDocument = "ETDA",
+                Name = isrun != null ? docName.Name : string.Empty,
+                TypeCode = isrun != null ? docName.typeCode : string.Empty,
+                Purpose = docName.type == StdDocumentName.TYPE._80 || docName.type == StdDocumentName.TYPE._81 ? artrn.youref : string.Empty,
                 Note = new Note
                 {
-                    Subject = string.Empty,
-                    Content = string.Empty
+                    Subject = docName.type == StdDocumentName.TYPE._80 || docName.type == StdDocumentName.TYPE._81 ? string.Empty : "หมายเหตุ",
+                    Content = docName.type == StdDocumentName.TYPE._80 || docName.type == StdDocumentName.TYPE._81 ? string.Empty : artrn.youref
                 }
             };
 
@@ -48,40 +97,40 @@ namespace MPA3.Model
             {
                 PostalCITradeAddress = new PostalTradeAddress
                 {
-                    LineOne = string.Empty,
-                    LineTwo = string.Empty,
-                    CountryID = string.Empty,
-                    PostcodeCode = string.Empty,
+                    LineOne = isinfo.addr01,
+                    LineTwo = isinfo.addr02,
+                    CountryID = countries.Where(c => c.Name.ToLower() == "thailand").First().Code,
+                    PostcodeCode = isinfo.GetZipcod(),
                     CountrySubDivisionID = string.Empty,
                     CityID = string.Empty,
                     CitySubDivisionID = string.Empty,
                     Address = string.Empty,
                 },
                 Name = string.Empty,
-                TaxID = string.Empty,
-                BranchCode = string.Empty,
-                CompleteNumber = string.Empty,
-                URIID = string.Empty,
-                Telephone = string.Empty,
-                Fax = string.Empty,
+                TaxID = isinfo.taxid,
+                BranchCode = isinfo.GetOrgnumString(),
+                CompleteNumber = "seller@esg.com",
+                URIID = "www.esg.co.th",
+                Telephone = isinfo.GetTelFax().telNum,
+                Fax = isinfo.GetTelFax().faxNum,
             };
 
             this.BuyerTradeParty = new BuyerTradeParty
             {
-                PersonName = string.Empty,
-                Name = string.Empty,
-                TaxID = string.Empty,
-                BranchCode = string.Empty,
-                CompleteNumber = string.Empty,
-                URIID = string.Empty,
-                Telephone = string.Empty,
-                Fax = string.Empty,
+                PersonName = armas.contact,
+                Name = armas.prenam + " " + armas.cusnam,
+                TaxID = armas.taxid,
+                BranchCode = armas.GetOrgnumString(),
+                CompleteNumber = "test@esg.co.th",
+                URIID = "www.esg.co.th",
+                Telephone = armas.GetTelFax().telNum,
+                Fax = armas.GetTelFax().faxNum,
                 PostalTradeAddress = new PostalTradeAddress
                 {
-                    CountryID = string.Empty,
-                    LineOne = string.Empty,
-                    LineTwo = string.Empty,
-                    PostcodeCode = string.Empty,
+                    CountryID = countries.Where(c => c.Name.ToLower() == "thailand").First().Code,
+                    LineOne = armas.addr01,
+                    LineTwo = armas.addr02 + " " + armas.addr03 + " " + armas.zipcod,
+                    PostcodeCode = armas.zipcod,
                     CountrySubDivisionID = string.Empty,
                     CityID = string.Empty,
                     CitySubDivisionID = string.Empty,
