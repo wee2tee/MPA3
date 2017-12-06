@@ -53,7 +53,7 @@
     <Compile Include="MakeDoc\PdfDoc.cs" />
     <Compile Include="MakeDoc\XmlDoc.cs" />
     <Compile Include="Model\DbfHelper.cs" />
-    <Compile Include="Model\DbfTable.cs" />
+    <Compile Include="Model\DbfDataSet.cs" />
     <Compile Include="Model\Inv.cs" />
     <Compile Include="Model\JsonModel.cs" />
     <Compile Include="Model\StdCode.cs" />

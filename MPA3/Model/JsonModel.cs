@@ -13,7 +13,7 @@ namespace MPA3.Model
 {
     public class JsonModel
     {
-        private enum VAT_TYPE : int
+        public enum VAT_TYPE : int
         {
             ACQUISITION = 1,
             CASH_BASIS = 2
@@ -29,62 +29,42 @@ namespace MPA3.Model
 
         public JsonModel(string data_path, string docnum)
         {
-            DbfTable dbf = new DbfTable(data_path);
+            DbfDataSet dataset = new DbfDataSet(data_path);
 
-            IsinfoDbf isinfo = dbf.Isinfo;
-            ArtrnDbf artrn = dbf.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
-            ArmasDbf armas = dbf.Armas.Where(a => a.cuscod == artrn.cuscod).FirstOrDefault();
-            List<StcrdDbf> stcrd = dbf.Stcrd.Where(s => s.docnum == docnum).ToList();
-            List<IstabDbf> qucod = dbf.Istab.Where(i => i.tabtyp == "20" && stcrd.Select(s => s.tqucod).ToList<string>().Contains(i.typcod)).ToList();
-            IsrunDbf isrun = dbf.Isrun.Where(i => i.doctyp == docnum.Substring(0, 2)).FirstOrDefault();
-            StdDocumentName docName = null;
-            #region docName
-            if (isrun != null)
+            IsinfoDbf isinfo = dataset.Isinfo;
+            ArtrnDbf artrn = dataset.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
+            StdDocumentName docName = artrn.GetDocName(dataset);
+            ArmasDbf armas = dataset.Armas.Where(a => a.cuscod == artrn.cuscod).FirstOrDefault();
+
+            ArtrnDbf refDoc = null;
+            if(docName.type == StdDocumentName.TYPE._80 || docName.type == StdDocumentName.TYPE._81)
             {
-                switch (isrun.doctyp)
-                {
-                    case "IV":
-                        if(artrn.srv_vattyp == ((int)VAT_TYPE.ACQUISITION).ToString() && artrn.vatamt > 0)
-                        {
-                            docName = new StdDocumentName(StdDocumentName.TYPE._T02);
-                        }
-                        else
-                        {
-                            docName = new StdDocumentName(StdDocumentName.TYPE._380);
-                        }
-                        break;
-
-                    case "HS":
-                        docName = new StdDocumentName(StdDocumentName.TYPE._T03);
-                        break;
-
-                    case "SR":
-                        docName = new StdDocumentName(StdDocumentName.TYPE._81);
-                        break;
-
-                    case "DR":
-                        docName = new StdDocumentName(StdDocumentName.TYPE._80);
-                        break;
-
-                    default:
-                        docName = new StdDocumentName(StdDocumentName.TYPE._388);
-                        break;
-                }
+                refDoc = dataset.Artrn.Where(a => a.docnum == artrn.sonum).FirstOrDefault();
             }
-            #endregion docName
+            else
+            {
+                refDoc = dataset.Artrn.Where(a => a.docnum == artrn.youref).FirstOrDefault();
+            }
+            
+            StdDocumentName refDocName = refDoc != null ? refDoc.GetDocName(dataset) : null;
+
+            List<StcrdDbf> stcrd = dataset.Stcrd.Where(s => s.docnum == docnum).ToList();
+            List<IstabDbf> qucod = dataset.Istab.Where(i => i.tabtyp == "20" && stcrd.Select(s => s.tqucod).ToList<string>().Contains(i.typcod)).ToList();
+            
             using (StreamReader rdr = File.OpenText(@"Res\Countries.json"))
             {
                 countries = (List<Country>)new JsonSerializer().Deserialize(rdr, typeof(List<Country>));
             }
 
+            // Create DocumentDetail for export to JSON
             this.DocumentDetail = new DocumentDetail
             {
                 ID = artrn.docnum,
                 CreationDateTime = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")),
                 IssueDateTime = artrn.docdat.Value.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")),
                 SpecifiedCIDocument = "ETDA",
-                Name = isrun != null ? docName.Name : string.Empty,
-                TypeCode = isrun != null ? docName.typeCode : string.Empty,
+                Name = docName != null ? docName.Name : string.Empty,
+                TypeCode = docName != null ? docName.typeCode : string.Empty,
                 Purpose = docName.type == StdDocumentName.TYPE._80 || docName.type == StdDocumentName.TYPE._81 ? artrn.youref : string.Empty,
                 Note = new Note
                 {
@@ -139,7 +119,34 @@ namespace MPA3.Model
             };
 
             this.IncludedSupplyChainTradeLineItem = new List<LineItem>();
+            int item_count = 0;
+            foreach (StcrdDbf st in stcrd)
+            {
+                this.IncludedSupplyChainTradeLineItem.Add(new LineItem
+                {
+                    LineID = (++item_count).ToString(),
+                    Name = st.stkdes,
+                    ChargeAmount = st.unitpr.ToString(),
+                    BilledQuantity = st.trnqty.ToString(),
+                    UnitCode = "",
+                    UnitName = qucod.Where(q => q.typcod == st.tqucod).First().typdes,
+                    ChargeIndicator = st.discamt > 0 ? "true" : "false",
+                    ActualAmount = st.discamt > 0 ? st.discamt.ToString() : "",
+                    NetLineTotalAmount = st.trnval.ToString(),
+                    GlobalID = "",
+                    ProductID = st.stkcod
+                });
+            }
             this.ReferencedDocument = new List<RefDocs>();
+            if (refDoc != null)
+            {
+                this.ReferencedDocument.Add(new RefDocs
+                {
+                    IssuerAssignedID = refDoc.docnum,
+                    IssueDateTime = refDoc.docdat.Value.ToString("yyyy-MM-ddTHH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")),
+                    ReferenceTypeCode = refDocName != null ? refDocName.typeCode : string.Empty
+                });
+            }
 
             this.ApplicableHeaderTradeSettlement = new ApplicableHeaderTradeSettlement
             {

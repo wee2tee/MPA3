@@ -5,6 +5,8 @@ using System.Text;
 using MPA3.Model;
 using DotNetDBF;
 using System.IO;
+using MPA3.Model;
+using static MPA3.Model.JsonModel;
 
 namespace MPA3.Misc
 {
@@ -95,6 +97,54 @@ namespace MPA3.Misc
                 //Console.WriteLine("File is in use by another process.");
                 return new ManageDataResult { success = false, message = ex.Message };
             }
+        }
+
+        public static StdDocumentName GetDocName(this ArtrnDbf artrn, DbfDataSet dataset)
+        {
+            //try
+            //{
+                IsrunDbf isrun = dataset.Isrun.Where(i => i.prefix == artrn.docnum.Substring(0, 2)).FirstOrDefault();
+            //var x = dataset.Isrun.OrderBy(d => d.doctyp).Select(d => d.doctyp).ToArray<string>();
+                StdDocumentName docName = null;
+                if (isrun != null)
+                {
+                    switch (isrun.doctyp)
+                    {
+                        case "IV":
+                            if (artrn.srv_vattyp == ((int)VAT_TYPE.ACQUISITION).ToString() && artrn.vatamt > 0)
+                            {
+                                docName = new StdDocumentName(StdDocumentName.TYPE._T02);
+                            }
+                            else
+                            {
+                                docName = new StdDocumentName(StdDocumentName.TYPE._380);
+                            }
+                            break;
+
+                        case "HS":
+                            docName = new StdDocumentName(StdDocumentName.TYPE._T03);
+                            break;
+
+                        case "CN":
+                            docName = new StdDocumentName(StdDocumentName.TYPE._81);
+                            break;
+
+                        case "DR":
+                            docName = new StdDocumentName(StdDocumentName.TYPE._80);
+                            break;
+
+                        default:
+                            docName = new StdDocumentName(StdDocumentName.TYPE._388);
+                            break;
+                    }
+                }
+
+                return docName;
+            //}
+            //catch (Exception ex)
+            //{
+            //    return null;
+            //}
         }
     }
 

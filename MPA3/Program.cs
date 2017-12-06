@@ -45,14 +45,12 @@ namespace MPA3
             /** TEST **/
             //try
             //{
-            //    List<Inv> inv_list = DbfTable.Inv();
-            //    Inv inv = inv_list.Where(i => i.status == "0").First();
-            //    JsonModel json = new JsonModel(inv.data_path, inv.docnum);
-
+            //    JsonModel J = new JsonModel(@"d:\express\expressi\test", "SR0000001");
+            //    Console.WriteLine(J.ToString());
             //}
-            //catch (Exception ex)
+            //catch (Exception EX)
             //{
-            //    Console.WriteLine("Error : " + ex.Message);
+            //    throw;
             //}
 
             /* args.Length = 3 for JSON/XML, 8 for PDF */
@@ -82,7 +80,7 @@ namespace MPA3
 
                         string data_path = args[1];
                         string docnum = args[2];
-                        DbfTable dbf = new DbfTable(data_path);
+                        DbfDataSet dbf = new DbfDataSet(data_path);
                         var artrn = dbf.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
                         if (artrn != null)
                         {

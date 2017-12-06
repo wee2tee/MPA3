@@ -9,11 +9,11 @@ using MPA3.Misc;
 
 namespace MPA3.Model
 {
-    public class DbfTable
+    public class DbfDataSet
     {
         private string data_path = null;
 
-        public DbfTable(string data_path)
+        public DbfDataSet(string data_path)
         {
             this.data_path = data_path.Trim();
         }
