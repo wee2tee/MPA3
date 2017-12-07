@@ -152,22 +152,23 @@ namespace MPA3.Model
             {
                 SpecifiedTradeAllowanceCharge = new SpecifiedTradeAllowanceCharge
                 {
-                    ChargeIndicator = "false",
-                    ActualAmount = string.Empty
+                    ChargeIndicator = artrn.discamt > 0 ? "true" : "false",
+                    ActualAmount = artrn.discamt > 0 ? artrn.discamt.ToString() : ""
                 },
-                InvoiceCurrencyCode = string.Empty,
+                InvoiceCurrencyCode = "THB",
                 ApplicableTradeTax = new ApplicableTradeTax
                 {
-                    CalculatedRate = "7.00",
-                    BasisAmount = string.Empty,
+                    CalculatedRate = artrn.vatrat.ToString(), //"7.00",
+                    BasisAmount = artrn.total.ToString(),
+                    VatAmount = artrn.vatamt.ToString(),
                     TypeCode = "VAT"
                 },
                 SpecifiedTradeSettlementHeaderMonetarySummation = new SpecifiedTradeSettlementHeaderMonetarySummation
                 {
-                    LineTotalAmount = string.Empty,
+                    LineTotalAmount = artrn.amount.ToString(), //string.Empty,
                     GrandTotalAmountCharactor = string.Empty,
-                    TaxTotalAmount = string.Empty,
-                    GrandTotalAmount = string.Empty
+                    TaxTotalAmount = artrn.vatamt.ToString(), //string.Empty,
+                    GrandTotalAmount = (artrn.total + artrn.vatamt).ToString() //string.Empty
                 }
             };
         }
@@ -182,7 +183,7 @@ namespace MPA3.Model
             try
             {
                 var dest_file = destination_file_path.EndsWith(".json") ? destination_file_path : destination_file_path + ".json";
-                File.WriteAllText(dest_file, this.ToString(), Encoding.UTF8);
+                File.WriteAllText(dest_file, this.ToString(), new UTF8Encoding(false));
                 return new CreateJsonResult { createSuccess = true, message = "success" };
             }
             catch (Exception ex)
@@ -304,6 +305,7 @@ namespace MPA3.Model
     {
         public string CalculatedRate { get; set; }
         public string BasisAmount { get; set; }
+        public string VatAmount { get; set; }
         public string TypeCode { get; set; }
     }
 
