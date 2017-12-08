@@ -75,4 +75,42 @@ namespace MPA3.Model
         public string Code { get; set; }
         public string Name { get; set; }
     }
+
+    public class CitySubDivision
+    {
+        public string provinceId { get; set; }
+        public string provinceName { get; set; }
+        public string provinceNameEng { get; set; }
+        public string CityId { get; set; }
+        public string CityName { get; set; }
+        public string CityNameEng { get; set; }
+        public string SubDivisionId { get; set; }
+        public string SubDivisionName { get; set; }
+        public string SubDivisionNameEng { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
+
+    }
+
+    public class Province
+    {
+        public string id { get; set; }
+        public string name { get; set; }
+        public List<City> cities { get; set; }
+    }
+
+    public class City
+    {
+        public string id { get; set; }
+        public string name { get; set; }
+        public List<SubDivision> subDivisions { get; set; }
+    }
+
+    public class SubDivision
+    {
+        public string id { get; set; }
+        public string name { get; set; }
+        public decimal? latitude { get; set; }
+        public decimal? longitude { get; set; }
+    }
 }

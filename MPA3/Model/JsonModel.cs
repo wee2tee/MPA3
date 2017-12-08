@@ -19,7 +19,8 @@ namespace MPA3.Model
             CASH_BASIS = 2
         }
         private List<Country> countries;
-
+        //List<City> cities;
+        private List<Province> province;
         public DocumentDetail DocumentDetail { get; set; }
         public SellerTradeParty SellerTradeParty { get; set; }
         public BuyerTradeParty BuyerTradeParty { get; set; }
@@ -54,6 +55,28 @@ namespace MPA3.Model
             using (StreamReader rdr = File.OpenText(@"Res\Countries.json"))
             {
                 countries = (List<Country>)new JsonSerializer().Deserialize(rdr, typeof(List<Country>));
+            }
+            using (StreamReader rdr = File.OpenText(@"Res\Cities.json"))
+            {
+                List<CitySubDivision> cities_json = (List<CitySubDivision>)new JsonSerializer().Deserialize(rdr, typeof(List<CitySubDivision>));
+                //cities = cities_json.Where(c => c.provinceId == "10").Select(c => new City { id = c.CityId, name = c.CityName }).ToList();
+                province = new List<Province>();
+                //cities.GroupBy(c => c.provinceId).ToList().ForEach(g => province.Add(new Province { id = g.First().provinceId, name = g.First().provinceName }));
+                foreach (var p in cities_json.GroupBy(c => c.provinceId))
+                {
+                    province.Add(new Province
+                    {
+                        id = p.First().provinceId,
+                        name = p.First().provinceName,
+                        cities = cities_json.Where(c => c.provinceId == p.First().provinceId).GroupBy(c => c.CityId).Select(g => new City
+                        {
+                            id = g.First().CityId,
+                            name = g.First().CityName,
+                            subDivisions = cities_json.Where(c => c.CityId == g.First().CityId).Select(sd => new SubDivision {  id = sd.SubDivisionId, name = sd.SubDivisionName, latitude = sd.Latitude, longitude = sd.Longitude }).ToList()
+                        }).ToList()
+                    });
+                }
+                int i = 0;
             }
 
             // Create DocumentDetail for export to JSON
