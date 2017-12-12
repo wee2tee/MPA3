@@ -19,7 +19,7 @@ namespace MPA3.Model
             CASH_BASIS = 2
         }
         private List<Country> countries;
-        //List<City> cities;
+        private List<CitySubDivision> cities;
         private List<Province> province;
         public DocumentDetail DocumentDetail { get; set; }
         public SellerTradeParty SellerTradeParty { get; set; }
@@ -30,12 +30,44 @@ namespace MPA3.Model
 
         public JsonModel(string data_path, string docnum)
         {
+            using (StreamReader rdr = File.OpenText(@"Res\Countries.json"))
+            {
+                countries = (List<Country>)new JsonSerializer().Deserialize(rdr, typeof(List<Country>));
+            }
+            using (StreamReader rdr = File.OpenText(@"Res\Cities.json"))
+            {
+                cities = (List<CitySubDivision>)new JsonSerializer().Deserialize(rdr, typeof(List<CitySubDivision>));
+                //List<CitySubDivision> cities_json = (List<CitySubDivision>)new JsonSerializer().Deserialize(rdr, typeof(List<CitySubDivision>));
+                //province = new List<Province>();
+                //foreach (var p in cities_json.GroupBy(c => c.provinceId))
+                //{
+                //    province.Add(new Province
+                //    {
+                //        id = p.First().provinceId,
+                //        name = p.First().provinceName,
+                //        cities = cities_json.Where(c => c.provinceId == p.First().provinceId).GroupBy(c => c.CityId).Select(g => new City
+                //        {
+                //            id = g.First().CityId,
+                //            name = g.First().CityName,
+                //            subDivisions = cities_json.Where(c => c.CityId == g.First().CityId).Select(sd => new SubDivision { id = sd.SubDivisionId, name = sd.SubDivisionName, latitude = sd.Latitude, longitude = sd.Longitude }).ToList()
+                //        }).ToList()
+                //    });
+                //}
+            }
+
             DbfDataSet dataset = new DbfDataSet(data_path);
 
             IsinfoDbf isinfo = dataset.Isinfo;
             ArtrnDbf artrn = dataset.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
             StdDocumentName docName = artrn.GetDocName(dataset);
             ArmasDbf armas = dataset.Armas.Where(a => a.cuscod == artrn.cuscod).FirstOrDefault();
+            CitySubDivision sellerCity = this.cities.Where(c => (isinfo.addr01 + " " + isinfo.addr02).Contains(c.provinceName)
+                                                            && (isinfo.addr01 + " " + isinfo.addr02).Contains(c.CityName)
+                                                            && (isinfo.addr01 + " " + isinfo.addr02).Contains(c.SubDivisionName)).FirstOrDefault();
+
+            CitySubDivision buyerCity = this.cities.Where(c => (armas.addr01 + " " + armas.addr02 + " " + armas.addr03).Contains(c.provinceName)
+                                                            && (armas.addr01 + " " + armas.addr02 + " " + armas.addr03).Contains(c.CityName)
+                                                            && (armas.addr01 + " " + armas.addr02 + " " + armas.addr03).Contains(c.SubDivisionName)).FirstOrDefault();
 
             ArtrnDbf refDoc = null;
             if(docName.type == StdDocumentName.TYPE._80 || docName.type == StdDocumentName.TYPE._81)
@@ -52,32 +84,7 @@ namespace MPA3.Model
             List<StcrdDbf> stcrd = dataset.Stcrd.Where(s => s.docnum == docnum).ToList();
             List<IstabDbf> qucod = dataset.Istab.Where(i => i.tabtyp == "20" && stcrd.Select(s => s.tqucod).ToList<string>().Contains(i.typcod)).ToList();
             
-            using (StreamReader rdr = File.OpenText(@"Res\Countries.json"))
-            {
-                countries = (List<Country>)new JsonSerializer().Deserialize(rdr, typeof(List<Country>));
-            }
-            using (StreamReader rdr = File.OpenText(@"Res\Cities.json"))
-            {
-                List<CitySubDivision> cities_json = (List<CitySubDivision>)new JsonSerializer().Deserialize(rdr, typeof(List<CitySubDivision>));
-                //cities = cities_json.Where(c => c.provinceId == "10").Select(c => new City { id = c.CityId, name = c.CityName }).ToList();
-                province = new List<Province>();
-                //cities.GroupBy(c => c.provinceId).ToList().ForEach(g => province.Add(new Province { id = g.First().provinceId, name = g.First().provinceName }));
-                foreach (var p in cities_json.GroupBy(c => c.provinceId))
-                {
-                    province.Add(new Province
-                    {
-                        id = p.First().provinceId,
-                        name = p.First().provinceName,
-                        cities = cities_json.Where(c => c.provinceId == p.First().provinceId).GroupBy(c => c.CityId).Select(g => new City
-                        {
-                            id = g.First().CityId,
-                            name = g.First().CityName,
-                            subDivisions = cities_json.Where(c => c.CityId == g.First().CityId).Select(sd => new SubDivision {  id = sd.SubDivisionId, name = sd.SubDivisionName, latitude = sd.Latitude, longitude = sd.Longitude }).ToList()
-                        }).ToList()
-                    });
-                }
-                int i = 0;
-            }
+            
 
             // Create DocumentDetail for export to JSON
             this.DocumentDetail = new DocumentDetail
@@ -105,15 +112,15 @@ namespace MPA3.Model
                     CountryID = countries.Where(c => c.Name.ToLower() == "thailand").First().Code,
                     PostcodeCode = isinfo.GetZipcod(),
                     CountrySubDivisionID = string.Empty,
-                    CityID = string.Empty,
-                    CitySubDivisionID = string.Empty,
+                    CityID = sellerCity != null ? sellerCity.CityId : string.Empty, //string.Empty,
+                    CitySubDivisionID = sellerCity != null ? sellerCity.SubDivisionId : string.Empty, //string.Empty,
                     Address = string.Empty,
                 },
                 Name = string.Empty,
                 TaxID = isinfo.taxid,
                 BranchCode = isinfo.GetOrgnumString(),
-                CompleteNumber = "seller@esg.com",
-                URIID = "www.esg.co.th",
+                CompleteNumber = isinfo.GetTelFax().telNum, //"seller@esg.com",
+                URIID = string.Empty, //"www.esg.co.th",
                 Telephone = isinfo.GetTelFax().telNum,
                 Fax = isinfo.GetTelFax().faxNum,
             };
@@ -124,8 +131,8 @@ namespace MPA3.Model
                 Name = armas.prenam + " " + armas.cusnam,
                 TaxID = armas.taxid,
                 BranchCode = armas.GetOrgnumString(),
-                CompleteNumber = "test@esg.co.th",
-                URIID = "www.esg.co.th",
+                CompleteNumber = armas.GetTelFax().telNum, //"test@esg.co.th",
+                URIID = string.Empty, //"www.esg.co.th",
                 Telephone = armas.GetTelFax().telNum,
                 Fax = armas.GetTelFax().faxNum,
                 PostalTradeAddress = new PostalTradeAddress
@@ -135,8 +142,8 @@ namespace MPA3.Model
                     LineTwo = armas.addr02 + " " + armas.addr03 + " " + armas.zipcod,
                     PostcodeCode = armas.zipcod,
                     CountrySubDivisionID = string.Empty,
-                    CityID = string.Empty,
-                    CitySubDivisionID = string.Empty,
+                    CityID = buyerCity != null ? buyerCity.CityId : string.Empty, //string.Empty,
+                    CitySubDivisionID = buyerCity != null ? buyerCity.SubDivisionId : string.Empty, //string.Empty,
                     Address = string.Empty
                 }
             };
@@ -154,7 +161,7 @@ namespace MPA3.Model
                     UnitCode = "",
                     UnitName = qucod.Where(q => q.typcod == st.tqucod).First().typdes,
                     ChargeIndicator = st.discamt > 0 ? "true" : "false",
-                    ActualAmount = st.discamt > 0 ? st.discamt.ToString() : "",
+                    ActualAmount = st.discamt > 0 ? st.discamt.ToString() : "0",
                     NetLineTotalAmount = st.trnval.ToString(),
                     GlobalID = "",
                     ProductID = st.stkcod
@@ -176,7 +183,7 @@ namespace MPA3.Model
                 SpecifiedTradeAllowanceCharge = new SpecifiedTradeAllowanceCharge
                 {
                     ChargeIndicator = artrn.discamt > 0 ? "true" : "false",
-                    ActualAmount = artrn.discamt > 0 ? artrn.discamt.ToString() : ""
+                    ActualAmount = artrn.discamt > 0 ? artrn.discamt.ToString() : "0"
                 },
                 InvoiceCurrencyCode = "THB",
                 ApplicableTradeTax = new ApplicableTradeTax

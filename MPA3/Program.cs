@@ -43,15 +43,15 @@ namespace MPA3
         static void Main(string[] args)
         {
             /** TEST **/
-            try
-            {
-                JsonModel J = new JsonModel(@"d:\express\expressi\test", "SR0000001");
-                Console.WriteLine(J.ToString());
-            }
-            catch (Exception EX)
-            {
-                throw;
-            }
+            //try
+            //{
+            //    JsonModel J = new JsonModel(@"d:\express\expressi\test", "SR0000001");
+            //    Console.WriteLine(J.ToString());
+            //}
+            //catch (Exception EX)
+            //{
+            //    throw;
+            //}
 
 
             //Create City.json file

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MkP", "MkP\MkP.csproj", "{6
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CCSD", "CCSD\CCSD.csproj", "{D992FB09-A00A-4261-819E-98632D60AABC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ETaxScanner", "ETaxScanner\ETaxScanner.csproj", "{143C0222-72DF-4BE1-AA6A-089A2F744853}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{D992FB09-A00A-4261-819E-98632D60AABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D992FB09-A00A-4261-819E-98632D60AABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D992FB09-A00A-4261-819E-98632D60AABC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{143C0222-72DF-4BE1-AA6A-089A2F744853}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{143C0222-72DF-4BE1-AA6A-089A2F744853}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{143C0222-72DF-4BE1-AA6A-089A2F744853}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{143C0222-72DF-4BE1-AA6A-089A2F744853}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
