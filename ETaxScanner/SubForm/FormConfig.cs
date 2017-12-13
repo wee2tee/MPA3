@@ -6,14 +6,185 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ETaxScanner.Model;
+using ETaxScanner.Misc;
+
 
 namespace ETaxScanner.SubForm
 {
     public partial class FormConfig : Form
     {
+        private Config config;
+        private FORM_MODE form_mode;
+
         public FormConfig()
         {
             InitializeComponent();
+        }
+
+        private void FormConfig_Load(object sender, EventArgs e)
+        {
+            this.form_mode = FORM_MODE.READ;
+            this.config = Config.LoadConfigValue();
+            this.FillForm();
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if(this.form_mode != FORM_MODE.READ)
+            {
+                if(MessageBox.Show("ข้อมูลที่ถูกแก้ไข จะไม่ถูกบันทึก, ทำต่อหรือไม่?", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.Cancel)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+            base.OnClosing(e);
+        }
+
+        private void FillForm()
+        {
+            this.txtExpressPath.Text = this.config.expressPath;
+            this.chSunday.Checked = this.config.isSunday ? true : false;
+            this.chMonday.Checked = this.config.isMonday ? true : false;
+            this.chTuesday.Checked = this.config.isTuesday ? true : false;
+            this.chWednesday.Checked = this.config.isWednesday ? true : false;
+            this.chThursday.Checked = this.config.isThursday ? true : false;
+            this.chFriday.Checked = this.config.isFriday ? true : false;
+            this.chSaturday.Checked = this.config.isSaturday ? true : false;
+            this.dtTimeFrom.Text = this.config.timeFrom.ToString();
+            this.dtTimeTo.Text = this.config.timeTo.ToString();
+            this.numRepeat.Value = this.config.repeatTime;
+        }
+
+        private void ResetFormState(FORM_MODE form_mode)
+        {
+            this.form_mode = form_mode;
+            this.txtExpressPath.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.btnBrowse.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.chSunday.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.chMonday.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.chTuesday.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.chWednesday.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.chThursday.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.chFriday.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.chSaturday.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.dtTimeFrom.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.dtTimeTo.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.numRepeat.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+
+            this.btnEdit.SetControlState(new FORM_MODE[] { FORM_MODE.READ }, this.form_mode);
+            this.btnSave.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.btnCancel.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+        }
+
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            this.config = Config.LoadConfigValue();
+            this.FillForm();
+            this.ResetFormState(FORM_MODE.EDIT);
+        }
+
+        private void btnSave_Click(object sender, EventArgs e)
+        {
+            this.config.SaveConfig();
+            this.ResetFormState(FORM_MODE.READ);
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.ResetFormState(FORM_MODE.READ);
+            this.config = Config.LoadConfigValue();
+            this.FillForm();
+        }
+
+        private void btnBrowse_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fb = new FolderBrowserDialog();
+            fb.ShowNewFolderButton = false;
+            fb.SelectedPath = Config.GetConfigFilePath();
+            if(fb.ShowDialog() == DialogResult.OK)
+            {
+                this.txtExpressPath.Text = fb.SelectedPath;
+            }
+        }
+
+        private void txtExpressPath_TextChanged(object sender, EventArgs e)
+        {
+            this.config.expressPath = ((TextBox)sender).Text;
+        }
+
+        private void chSunday_CheckedChanged(object sender, EventArgs e)
+        {
+            this.config.isSunday = ((CheckBox)sender).Checked ? true : false;
+        }
+
+        private void chMonday_CheckedChanged(object sender, EventArgs e)
+        {
+            this.config.isMonday = ((CheckBox)sender).Checked ? true : false;
+        }
+
+        private void chTuesday_CheckedChanged(object sender, EventArgs e)
+        {
+            this.config.isTuesday = ((CheckBox)sender).Checked ? true : false;
+        }
+
+        private void chWednesday_CheckedChanged(object sender, EventArgs e)
+        {
+            this.config.isWednesday = ((CheckBox)sender).Checked ? true : false;
+        }
+
+        private void chThursday_CheckedChanged(object sender, EventArgs e)
+        {
+            this.config.isThursday = ((CheckBox)sender).Checked ? true : false;
+        }
+
+        private void chFriday_CheckedChanged(object sender, EventArgs e)
+        {
+            this.config.isFriday = ((CheckBox)sender).Checked ? true : false;
+        }
+
+        private void chSaturday_CheckedChanged(object sender, EventArgs e)
+        {
+            this.config.isSaturday = ((CheckBox)sender).Checked ? true : false;
+        }
+
+        private void dtTimeFrom_ValueChanged(object sender, EventArgs e)
+        {
+            this.config.timeFrom = TimeSpan.Parse(((DateTimePicker)sender).Text);
+        }
+
+        private void dtTimeTo_ValueChanged(object sender, EventArgs e)
+        {
+            this.config.timeTo = TimeSpan.Parse(((DateTimePicker)sender).Text);
+        }
+
+        private void numRepeat_ValueChanged(object sender, EventArgs e)
+        {
+            this.config.repeatTime = Convert.ToInt32(((NumericUpDown)sender).Value);
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if(keyData == (Keys.Alt | Keys.E))
+            {
+                this.btnEdit.PerformClick();
+                return true;
+            }
+
+            if(keyData == Keys.F9)
+            {
+                this.btnSave.PerformClick();
+                return true;
+            }
+
+            if(keyData == Keys.Escape)
+            {
+                this.btnCancel.PerformClick();
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
         }
     }
 }

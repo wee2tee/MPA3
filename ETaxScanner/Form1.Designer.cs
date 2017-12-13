@@ -68,7 +68,7 @@
             // button3
             // 
             this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Image = global::ETaxScanner.Properties.Resources.stop_16;
+            this.button3.Image = global::ETaxScanner.Properties.Resources.pause_16;
             this.button3.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.button3.Location = new System.Drawing.Point(516, 78);
             this.button3.Name = "button3";
