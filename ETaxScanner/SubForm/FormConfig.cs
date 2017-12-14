@@ -8,7 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using ETaxScanner.Model;
 using ETaxScanner.Misc;
-
+using System.IO;
 
 namespace ETaxScanner.SubForm
 {
@@ -55,6 +55,12 @@ namespace ETaxScanner.SubForm
             this.dtTimeFrom.Text = this.config.timeFrom.ToString();
             this.dtTimeTo.Text = this.config.timeTo.ToString();
             this.numRepeat.Value = this.config.repeatTime;
+            this.txtSmtpHost.Text = this.config.smtpHost;
+            this.numSmtpPort.Value = this.config.smtpPort;
+            this.txtSmtpUser.Text = this.config.smtpUser;
+            this.txtSmtpPassword.Text = this.config.smtpPassword;
+            this.chEnableSsl.Checked = this.config.enableSsl ? true : false;
+            this.txtTimeStampEmail.Text = this.config.timeStampEmail;
         }
 
         private void ResetFormState(FORM_MODE form_mode)
@@ -72,6 +78,12 @@ namespace ETaxScanner.SubForm
             this.dtTimeFrom.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
             this.dtTimeTo.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
             this.numRepeat.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.txtSmtpHost.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.numSmtpPort.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.txtSmtpUser.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.txtSmtpPassword.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.chEnableSsl.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
+            this.txtTimeStampEmail.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
 
             this.btnEdit.SetControlState(new FORM_MODE[] { FORM_MODE.READ }, this.form_mode);
             this.btnSave.SetControlState(new FORM_MODE[] { FORM_MODE.EDIT }, this.form_mode);
@@ -87,6 +99,12 @@ namespace ETaxScanner.SubForm
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (!Directory.Exists(this.config.expressPath))
+            {
+                MessageBox.Show("ค้นหาที่เก็บโปรแกรมเอ็กซ์เพรสตามที่ระบุไม่พบ", "", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                return;
+            }
+
             this.config.SaveConfig();
             this.ResetFormState(FORM_MODE.READ);
         }
@@ -164,6 +182,36 @@ namespace ETaxScanner.SubForm
             this.config.repeatTime = Convert.ToInt32(((NumericUpDown)sender).Value);
         }
 
+        private void txtSmtpHost_TextChanged(object sender, EventArgs e)
+        {
+            this.config.smtpHost = ((TextBox)sender).Text;
+        }
+
+        private void numSmtpPort_ValueChanged(object sender, EventArgs e)
+        {
+            this.config.smtpPort = Convert.ToInt32(((NumericUpDown)sender).Value);
+        }
+
+        private void txtSmtpUser_TextChanged(object sender, EventArgs e)
+        {
+            this.config.smtpUser = ((TextBox)sender).Text;
+        }
+
+        private void txtSmtpPassword_TextChanged(object sender, EventArgs e)
+        {
+            this.config.smtpPassword = ((TextBox)sender).Text;
+        }
+
+        private void chEnableSsl_CheckedChanged(object sender, EventArgs e)
+        {
+            this.config.enableSsl = ((CheckBox)sender).Checked;
+        }
+
+        private void txtTimeStampEmail_TextChanged(object sender, EventArgs e)
+        {
+            this.config.timeStampEmail = ((TextBox)sender).Text;
+        }
+
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
             if(keyData == (Keys.Alt | Keys.E))
@@ -182,6 +230,15 @@ namespace ETaxScanner.SubForm
             {
                 this.btnCancel.PerformClick();
                 return true;
+            }
+
+            if(keyData == Keys.Enter)
+            {
+                if(this.form_mode == FORM_MODE.EDIT && !(this.btnSave.Focused || this.btnCancel.Focused))
+                {
+                    SendKeys.Send("{TAB}");
+                    return true;
+                }
             }
 
             return base.ProcessCmdKey(ref msg, keyData);
