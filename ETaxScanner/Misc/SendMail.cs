@@ -6,6 +6,7 @@ using System.Net.Mail;
 using System.Text;
 using ETaxScanner.Model;
 using System.Windows.Forms;
+using System.IO;
 
 namespace ETaxScanner.Misc
 {
@@ -61,6 +62,8 @@ namespace ETaxScanner.Misc
             try
             {
                 this.client.Send(this.mailMessage);
+                this.mailMessage.Dispose();
+                this.mailMessage = null;
                 return true;
             }
             catch (Exception ex)

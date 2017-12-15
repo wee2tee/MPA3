@@ -6,6 +6,7 @@ using System.Text;
 using System.Data.SQLite;
 using System.Windows.Forms;
 using System.Data;
+using ETaxScanner.Misc;
 
 namespace ETaxScanner.Model
 {
@@ -68,7 +69,8 @@ namespace ETaxScanner.Model
 
                     if (rows == 0)
                     {
-                        sql = @"Insert into config (express_path, is_sunday, is_monday, is_tuesday, is_wednesday, is_thursday, is_friday, is_saturday, start, end, repeat_time, smtp_host, smtp_port, smtp_user, smtp_password, enable_ssl, timestamp_email) values ('', 1, 1, 1, 1, 1, 1, 1, '00:00', '23:59', 5, '', 587, '', '', 1, '')";
+                        string expressFolder = Helper.GetParentFolder();
+                        sql = @"Insert into config (express_path, is_sunday, is_monday, is_tuesday, is_wednesday, is_thursday, is_friday, is_saturday, start, end, repeat_time, smtp_host, smtp_port, smtp_user, smtp_password, enable_ssl, timestamp_email) values ('" + expressFolder + "', 1, 1, 1, 1, 1, 1, 1, '00:00', '23:59', 5, '', 587, '', '', 1, '')";
                         cmd = new SQLiteCommand(sql, conn);
                         cmd.ExecuteNonQuery();
                     }

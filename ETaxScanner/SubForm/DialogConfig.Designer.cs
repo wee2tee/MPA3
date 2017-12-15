@@ -1,6 +1,6 @@
 ﻿namespace ETaxScanner.SubForm
 {
-    partial class FormConfig
+    partial class DialogConfig
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormConfig));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DialogConfig));
             this.label1 = new System.Windows.Forms.Label();
             this.txtExpressPath = new System.Windows.Forms.TextBox();
             this.btnBrowse = new System.Windows.Forms.Button();
@@ -119,7 +119,7 @@
             0,
             0});
             this.numRepeat.Minimum = new decimal(new int[] {
-            5,
+            1,
             0,
             0,
             0});
@@ -483,7 +483,7 @@
             this.numSmtpPort.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.numSmtpPort.ValueChanged += new System.EventHandler(this.numSmtpPort_ValueChanged);
             // 
-            // FormConfig
+            // DialogConfig
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -501,7 +501,7 @@
             this.KeyPreview = true;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "FormConfig";
+            this.Name = "DialogConfig";
             this.ShowIcon = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Configuration";

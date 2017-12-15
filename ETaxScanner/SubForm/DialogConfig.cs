@@ -12,12 +12,12 @@ using System.IO;
 
 namespace ETaxScanner.SubForm
 {
-    public partial class FormConfig : Form
+    public partial class DialogConfig : Form
     {
         private Config config;
         private FORM_MODE form_mode;
 
-        public FormConfig()
+        public DialogConfig()
         {
             InitializeComponent();
         }

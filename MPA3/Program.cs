@@ -94,8 +94,8 @@ namespace MPA3
             //Console.WriteLine("completed.");
 
 
-            /* args.Length = 3 for JSON/XML, 8 for PDF */
-            if (!(args != null && (/*args.Length == 2 || */args.Length == 3 || args.Length == 8)))
+            /* args.Length = 3 for XML, 4 for JSON, 8 for PDF */
+            if (!(args != null && (args.Length == 3 || args.Length == 4 || args.Length == 8)))
             {
                 Console.WriteLine("Error : Arguments not specified completely!");
                 return;
@@ -113,7 +113,7 @@ namespace MPA3
                     // Create JSON file
                     if (args[0].ToUpper().Trim() == PROCESS_TYPE.JSON.ToString())
                     {
-                        if (args.Length < 3)
+                        if (args.Length < 4)
                         {
                             Console.WriteLine("Error : Arguments not specified completely!");
                             return;
@@ -121,12 +121,13 @@ namespace MPA3
 
                         string data_path = args[1];
                         string docnum = args[2];
+                        string dest_path = args[3];
                         DbfDataSet dbf = new DbfDataSet(data_path);
                         var artrn = dbf.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
                         if (artrn != null)
                         {
                             JsonModel json = new JsonModel(data_path, docnum);
-                            var result = json.WriteToFile(@"json\" + docnum + ".json");
+                            var result = json.WriteToFile(/*@"json\" + docnum + ".json"*/ dest_path);
                             if (result.createSuccess)
                             {
                                 Console.WriteLine("Success");
@@ -154,9 +155,9 @@ namespace MPA3
                         }
 
                         string json_path = args[1];
-                        string dest_xml = args[2];
+                        string dest_path = args[2];
 
-                        XmlDoc xml = new XmlDoc(json_path, dest_xml);
+                        XmlDoc xml = new XmlDoc(json_path, dest_path);
                         var result = xml.CreateXml();
 
                         if (result.createSuccess)
