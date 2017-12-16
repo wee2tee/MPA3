@@ -57,20 +57,26 @@ namespace ETaxScanner.Misc
             }
         }
 
-        public bool Send()
+        public SendMailResult Send()
         {
             try
             {
                 this.client.Send(this.mailMessage);
                 this.mailMessage.Dispose();
                 this.mailMessage = null;
-                return true;
+                return new SendMailResult { Success = true, Message = "Success" } ;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
+                //MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return new SendMailResult { Success = false, Message = ex.Message };
             }
         }
+    }
+
+    public class SendMailResult
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
     }
 }

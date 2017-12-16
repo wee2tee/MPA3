@@ -50,52 +50,46 @@ namespace ETaxScanner
             conf.ShowDialog();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnSendMail_Click(object sender, EventArgs e)
         {
             var company_list = Helper.Sccomp();
 
+            this.CreateFileAndSendMail(@"d:\express\expressi\test", "SR0000002", "weerawat.36@gmail.com");
 
-            DbfDataSet dbf = new DbfDataSet(@"d:\express\expressi\test");
-            var artrn = dbf.Artrn.Where(a => a.docnum == "SR0000001").FirstOrDefault();
-            string subject = string.Empty;
-            if (artrn != null)
-            {
-                subject += artrn.docdat.Value.ToString("[ddMMyyyy]", CultureInfo.GetCultureInfo("th-TH"));
-                subject += "[" + artrn.GetSubjectDocType(dbf) + "]";
-                subject += "[" + artrn.docnum + "]";
-            }
-
-            Console.WriteLine(" ==> Start at " + DateTime.Now.ToString());
-            if (this.CreateJson(@"d:\express\expressi\test", @"SR0000001", @"D:\Express\ExpressI\test\eTaxInvoice\json\SR0000001.json").Success)
-            {
-                if(this.CreateXml(@"d:\express\expressi\test\eTaxInvoice\json\SR0000001.json", @"D:\Express\ExpressI\test\eTaxInvoice\xml\SR0000001.xml").Success)
-                {
-                    if(this.CreatePdfA3(@"d:\express\expressi\test\eTaxInvoice\pdf\sample.pdf", @"D:\Express\ExpressI\test\eTaxInvoice\xml\SR0000001.xml", @"d:\express\expressi\test\eTaxInvoice\pdfa3\SR0000001.pdf", artrn.GetDocType(dbf)).Success)
-                    {
-                        Mailing m = new Mailing("weerawat.36@hotmail.com", subject, "", new string[] { @"d:\express\expressi\test\eTaxInvoice\pdfa3\SR0000001.pdf" });
-                        if (m.Send())
-                        {
-                            Console.WriteLine(" ==> Send mail success");
-                        }
-                        else
-                        {
-                            Console.WriteLine(" ==> Send mail failed");
-                        }
-                        Console.WriteLine(" ==> Completed at " + DateTime.Now.ToString());
-                        m = null;
-                    }
-                }
-            }
-            
-
-            //Mailing m = new Mailing("weerawat.36@hotmail.com", "Test Email ทดสอบส่งอีเมล์", "This is a testing email นี่คืออีเมล์ทดสอบ", new string[] { @"D:\Express\ExpressI\eTaxInvoice\pdf\IV0000002.pdf" });
-            //if (m.Send())
+            //DbfDataSet dbf = new DbfDataSet(@"d:\express\expressi\test");
+            //var artrn = dbf.Artrn.Where(a => a.docnum == "SR0000001").FirstOrDefault();
+            //string subject = string.Empty;
+            //if (artrn != null)
             //{
-            //    Console.WriteLine("Success");
+            //    subject += artrn.docdat.Value.ToString("[ddMMyyyy]", CultureInfo.GetCultureInfo("th-TH"));
+            //    subject += "[" + artrn.GetSubjectDocType(dbf) + "]";
+            //    subject += "[" + artrn.docnum + "]";
             //}
-            //else
+
+            //Console.WriteLine(" ==> Start at " + DateTime.Now.ToString());
+            //if (this.CreateJson(@"d:\express\expressi\test", @"SR0000001", @"D:\Express\ExpressI\test\eTaxInvoice\json\SR0000001.json").Success)
             //{
-            //    Console.WriteLine("Failed");
+            //    if(this.CreateXml(@"d:\express\expressi\test\eTaxInvoice\json\SR0000001.json", @"D:\Express\ExpressI\test\eTaxInvoice\xml\SR0000001.xml").Success)
+            //    {
+            //        File.Delete(@"d:\express\expressi\test\eTaxInvoice\json\SR0000001.json");
+
+            //        if(this.CreatePdfA3(@"d:\express\expressi\test\eTaxInvoice\pdf\sample.pdf", @"D:\Express\ExpressI\test\eTaxInvoice\xml\SR0000001.xml", @"d:\express\expressi\test\eTaxInvoice\pdfa3\SR0000001.pdf", artrn.GetDocType(dbf)).Success)
+            //        {
+            //            File.Delete(@"D:\Express\ExpressI\test\eTaxInvoice\xml\SR0000001.xml");
+
+            //            Mailing m = new Mailing("weerawat.36@hotmail.com", subject, "", new string[] { @"d:\express\expressi\test\eTaxInvoice\pdfa3\SR0000001.pdf" });
+            //            if (m.Send().Success)
+            //            {
+            //                Console.WriteLine(" ==> Send mail success");
+            //            }
+            //            else
+            //            {
+            //                Console.WriteLine(" ==> Send mail failed");
+            //            }
+            //            Console.WriteLine(" ==> Completed at " + DateTime.Now.ToString());
+            //            m = null;
+            //        }
+            //    }
             //}
         }
 
@@ -106,7 +100,7 @@ namespace ETaxScanner
             this.SetControlState(FORM_MODE.READ);
 
             this.timer = new System.Windows.Forms.Timer();
-            timer.Interval = this.config.repeatTime * 5000 /*60000*/;
+            timer.Interval = this.config.repeatTime * 60000;
             timer.Tick += Timer_Tick;
             timer.Enabled = true;
             timer.Start();
@@ -135,6 +129,72 @@ namespace ETaxScanner
                 this.timer.Enabled = false;
                 this.timer.Dispose();
                 this.timer = null;
+            }
+        }
+
+        private CreateFileResult CreateFileAndSendMail(string data_path, string docnum, string customer_email)
+        {
+            try
+            {
+                DbfDataSet dbf = new DbfDataSet(data_path);
+                var artrn = dbf.Artrn.Where(a => a.docnum == docnum).FirstOrDefault();
+
+                if (artrn == null)
+                    throw new Exception("Error : Document number " + docnum + " not found in data path " + data_path);
+
+                string subject = string.Empty;
+                subject += artrn.docdat.Value.ToString("[ddMMyyyy]", CultureInfo.GetCultureInfo("th-TH"));
+                subject += "[" + artrn.GetSubjectDocType(dbf) + "]";
+                subject += "[" + artrn.docnum + "]";
+
+                Console.WriteLine(" ==> Start at " + DateTime.Now.ToString());
+                var json_result = this.CreateJson(data_path, docnum, data_path + @"\eTaxInvoice\json\" + docnum + ".json");
+                if (json_result.Success)
+                {
+                    var xml_result = this.CreateXml(data_path + @"\eTaxInvoice\json\" + docnum + ".json", data_path + @"\eTaxInvoice\xml\" + docnum + ".xml");
+                    if (xml_result.Success)
+                    {
+                        File.Delete(data_path + @"\eTaxInvoice\json\" + docnum + ".json");
+
+                        var pdfa3_result = this.CreatePdfA3(data_path + @"\eTaxInvoice\pdf\" + docnum + ".pdf", data_path + @"\eTaxInvoice\xml\" + docnum + ".xml", data_path + @"\eTaxInvoice\pdfa3\" + docnum + ".pdf", artrn.GetDocType(dbf));
+                        if (pdfa3_result.Success)
+                        {
+                            File.Delete(data_path + @"\eTaxInvoice\xml\" + docnum + ".xml");
+
+                            Mailing m = new Mailing(customer_email, subject, "", new string[] { data_path + @"\eTaxInvoice\pdfa3\" + docnum + ".pdf" });
+                            var mail_result = m.Send();
+                            if (mail_result.Success)
+                            {
+                                Console.WriteLine(" ==> Send mail success");
+                                Console.WriteLine(" ==> Completed at " + DateTime.Now.ToString());
+                                m = null;
+                                return new CreateFileResult { Success = true, Message = mail_result.Message };
+                            }
+                            else
+                            {
+                                Console.WriteLine(" ==> Send mail failed");
+                                Console.WriteLine(" ==> Corupted at " + DateTime.Now.ToString());
+                                return new CreateFileResult { Success = false, Message = mail_result.Message };
+                            }
+                        }
+                        else
+                        {
+                            return pdfa3_result;
+                        }
+                    }
+                    else
+                    {
+                        return xml_result;
+                    }
+                }
+                else
+                {
+                    return json_result;
+                }
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 
