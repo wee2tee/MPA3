@@ -208,7 +208,7 @@ namespace MPA3.Model
                 {
                     Inv i = new Inv
                     {
-                        data_path = row.Field<string>("datapath").Trim(),
+                        //data_path = row.Field<string>("datapath").Trim(),
                         docnum = row.Field<string>("docnum").Trim(),
                         email = row.Field<string>("email").Trim(),
                         status = row.Field<string>("status").Trim()

@@ -14,16 +14,24 @@ using System.Threading;
 using System.IO;
 using MPA3.Model;
 using System.Globalization;
+using System.Data.OleDb;
 
 namespace ETaxScanner
 {
     public partial class Form1 : Form
     {
+        private bool is_on_system_tray = false;
         private FORM_MODE form_mode; // FORM_MODE.EDIT = stop, FORM_MODE.READ = running
         private System.Windows.Forms.Timer timer = null;
         private Config config;
         private string scanned_file_name = @"\eTaxInvoice\inv.dbf";
         private bool in_process = false;
+        private List<PdfJob> job_list;
+        private enum JOB_STATE : int
+        {
+            NEW = 0,
+            SENDED = 1
+        }
 
         public Form1()
         {
@@ -55,42 +63,6 @@ namespace ETaxScanner
             var company_list = Helper.Sccomp();
 
             this.CreateFileAndSendMail(@"d:\express\expressi\test", "SR0000002", "weerawat.36@gmail.com");
-
-            //DbfDataSet dbf = new DbfDataSet(@"d:\express\expressi\test");
-            //var artrn = dbf.Artrn.Where(a => a.docnum == "SR0000001").FirstOrDefault();
-            //string subject = string.Empty;
-            //if (artrn != null)
-            //{
-            //    subject += artrn.docdat.Value.ToString("[ddMMyyyy]", CultureInfo.GetCultureInfo("th-TH"));
-            //    subject += "[" + artrn.GetSubjectDocType(dbf) + "]";
-            //    subject += "[" + artrn.docnum + "]";
-            //}
-
-            //Console.WriteLine(" ==> Start at " + DateTime.Now.ToString());
-            //if (this.CreateJson(@"d:\express\expressi\test", @"SR0000001", @"D:\Express\ExpressI\test\eTaxInvoice\json\SR0000001.json").Success)
-            //{
-            //    if(this.CreateXml(@"d:\express\expressi\test\eTaxInvoice\json\SR0000001.json", @"D:\Express\ExpressI\test\eTaxInvoice\xml\SR0000001.xml").Success)
-            //    {
-            //        File.Delete(@"d:\express\expressi\test\eTaxInvoice\json\SR0000001.json");
-
-            //        if(this.CreatePdfA3(@"d:\express\expressi\test\eTaxInvoice\pdf\sample.pdf", @"D:\Express\ExpressI\test\eTaxInvoice\xml\SR0000001.xml", @"d:\express\expressi\test\eTaxInvoice\pdfa3\SR0000001.pdf", artrn.GetDocType(dbf)).Success)
-            //        {
-            //            File.Delete(@"D:\Express\ExpressI\test\eTaxInvoice\xml\SR0000001.xml");
-
-            //            Mailing m = new Mailing("weerawat.36@hotmail.com", subject, "", new string[] { @"d:\express\expressi\test\eTaxInvoice\pdfa3\SR0000001.pdf" });
-            //            if (m.Send().Success)
-            //            {
-            //                Console.WriteLine(" ==> Send mail success");
-            //            }
-            //            else
-            //            {
-            //                Console.WriteLine(" ==> Send mail failed");
-            //            }
-            //            Console.WriteLine(" ==> Completed at " + DateTime.Now.ToString());
-            //            m = null;
-            //        }
-            //    }
-            //}
         }
 
         private void btnStart_Click(object sender, EventArgs e)
@@ -103,6 +75,7 @@ namespace ETaxScanner
             timer.Interval = this.config.repeatTime * 60000;
             timer.Tick += Timer_Tick;
             timer.Enabled = true;
+            this.Timer_Tick(sender, e);
             timer.Start();
         }
 
@@ -111,12 +84,77 @@ namespace ETaxScanner
             if (this.in_process)
                 return;
 
-            //using (BackgroundWorker wrk = new BackgroundWorker())
-            //{
-            //    wrk.DoWork += delegate
-            //}
+            this.in_process = true;
+            this.job_list = new List<PdfJob>();
+            var company_list = Helper.Sccomp();
+            if(company_list == null)
+            {
+                Console.WriteLine("Cannot find sccomp.dbf, please make sure \"Express program path\" is configure correctly");
+                return;
+            }
+                
+            foreach (var comp in company_list)
+            {
+                if(File.Exists(comp.abs_path + this.scanned_file_name))
+                {
+                    List<Inv> jobs = DbfDataSet.Inv(comp.abs_path + this.scanned_file_name).Where(j => j.status == ((int)JOB_STATE.NEW).ToString()).ToList();
+                    foreach (var job in jobs)
+                    {
+                        this.job_list.Add(new PdfJob
+                        {
+                            DataPath = comp.abs_path,
+                            Docnum = job.docnum,
+                            Email = job.email,
+                            SendTime = null,
+                            Success = false
+                        });
+                    }
+                    Console.WriteLine(" ======> Scan new job completed, found " + jobs.Count.ToString() + " item(s)");
+                }
+            }
 
-            
+            using (BackgroundWorker wrk = new BackgroundWorker())
+            {
+                wrk.DoWork += delegate
+                {
+                    for (int i = 0; i < this.job_list.Count; i++)
+                    {
+                        var send_result = this.CreateFileAndSendMail(this.job_list[i].DataPath, this.job_list[i].Docnum, this.job_list[i].Email);
+                        if (send_result.Success)
+                        {
+                            if(this.UpdateJobState(this.job_list[i], JOB_STATE.SENDED) == true)
+                            {
+                                Log log = new Log { Time = DateTime.Now, DataPath = this.job_list[i].DataPath, Description = "Sending document # " + this.job_list[i].Docnum + " to email " + this.job_list[i].Email + " success." };
+                                log.SaveLog();
+
+                                Console.WriteLine(" -> Send " + this.job_list[i].DataPath + ":" + this.job_list[i].Docnum + " success at " + DateTime.Now.ToString());
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception(send_result.Message);
+                        }
+                    }
+                    //foreach (var job in this.job_list)
+                    //{
+                    //    this.CreateFileAndSendMail(job.DataPath, job.Docnum, job.Email);
+
+                    //}
+                };
+                wrk.RunWorkerCompleted += delegate
+                {
+                    this.in_process = false;
+                    Console.WriteLine(" ==> Send all documents success at " + DateTime.Now.ToString());
+                    Console.WriteLine("");
+                };
+                wrk.RunWorkerAsync();
+            }
+
+            //Console.WriteLine(" ==> Scanned success at " + DateTime.Now.ToString());
+            //this.job_list.ForEach(j => Console.WriteLine(" ==> Data path : " + j.DataPath + " , Docnum : " + j.Docnum + " , Email : " + j.Email));
+            //Console.WriteLine(" ----------");
+            //Console.WriteLine("");
         }
 
         private void btnStop_Click(object sender, EventArgs e)
@@ -129,6 +167,36 @@ namespace ETaxScanner
                 this.timer.Enabled = false;
                 this.timer.Dispose();
                 this.timer = null;
+            }
+        }
+
+        private bool UpdateJobState(PdfJob job, JOB_STATE job_state)
+        {
+            try
+            {
+                string data_path = Directory.GetParent(job.DataPath + this.scanned_file_name).FullName;
+                string dbf_file_name = Path.GetFileNameWithoutExtension(job.DataPath + this.scanned_file_name);
+
+                OleDbConnection conn = new OleDbConnection(
+                    @"Provider=VFPOLEDB.1;Data Source=" + data_path);
+
+                conn.Open();
+
+                if (conn.State == ConnectionState.Open)
+                {
+                    string mySQL = "Update " + dbf_file_name + " Set Status = '" + ((int)job_state).ToString() + "' Where docnum='" + job.Docnum + "'";
+
+                    OleDbCommand cmd = new OleDbCommand(mySQL, conn);
+                    cmd.ExecuteNonQuery();
+
+                    conn.Close();
+                }
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return this.UpdateJobState(job, job_state);
             }
         }
 
@@ -147,7 +215,7 @@ namespace ETaxScanner
                 subject += "[" + artrn.GetSubjectDocType(dbf) + "]";
                 subject += "[" + artrn.docnum + "]";
 
-                Console.WriteLine(" ==> Start at " + DateTime.Now.ToString());
+                //Console.WriteLine(" ==> Start at " + DateTime.Now.ToString());
                 var json_result = this.CreateJson(data_path, docnum, data_path + @"\eTaxInvoice\json\" + docnum + ".json");
                 if (json_result.Success)
                 {
@@ -165,15 +233,15 @@ namespace ETaxScanner
                             var mail_result = m.Send();
                             if (mail_result.Success)
                             {
-                                Console.WriteLine(" ==> Send mail success");
-                                Console.WriteLine(" ==> Completed at " + DateTime.Now.ToString());
+                                //Console.WriteLine(" ==> Send mail success");
+                                //Console.WriteLine(" ==> Completed at " + DateTime.Now.ToString());
                                 m = null;
                                 return new CreateFileResult { Success = true, Message = mail_result.Message };
                             }
                             else
                             {
-                                Console.WriteLine(" ==> Send mail failed");
-                                Console.WriteLine(" ==> Corupted at " + DateTime.Now.ToString());
+                                //Console.WriteLine(" ==> Send mail failed");
+                                //Console.WriteLine(" ==> Corupted at " + DateTime.Now.ToString());
                                 return new CreateFileResult { Success = false, Message = mail_result.Message };
                             }
                         }
@@ -292,11 +360,77 @@ namespace ETaxScanner
                 return new CreateFileResult { Success = false, Message = pdf_result };
             }
         }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!this.is_on_system_tray)
+            {
+                this.is_on_system_tray = true;
+                e.Cancel = true;
+                Hide();
+                NotifyIcon n = new NotifyIcon();
+                n.Icon = ETaxScanner.Properties.Resources.tongue_16;
+                n.Text = "eTax Scanner";
+                n.Visible = true;
+                n.BalloonTipIcon = ToolTipIcon.Info;
+                n.BalloonTipText = "Click to show menu";
+                n.Click += delegate
+                {
+                    ContextMenuStrip cms = new ContextMenuStrip();
+                    ToolStripButton btn_show = new ToolStripButton("Show main window");
+                    btn_show.Click += delegate
+                    {
+                        this.Show();
+                        n.Visible = false;
+                    };
+                    cms.Items.Add(btn_show);
+                    ToolStripButton btn_exit = new ToolStripButton("Exit");
+                    btn_exit.Click += delegate
+                    {
+                        this.is_on_system_tray = true;
+                        Application.Exit();
+                        n.Visible = false;
+                    };
+                    cms.Items.Add(btn_exit);
+                    cms.Show(this, Control.MousePosition);
+                    //ContextMenu cm = new ContextMenu();
+                    //MenuItem mnu_show = new MenuItem("Show main window");
+                    //mnu_show.Click += delegate
+                    //{
+                    //    this.Show();
+                    //};
+                    //cm.MenuItems.Add(mnu_show);
+                    //MenuItem mnu_exit = new MenuItem("Exit");
+                    //mnu_exit.Click += delegate
+                    //{
+                    //    Application.Exit();
+                    //};
+                    //cm.MenuItems.Add(mnu_exit);
+                    //cm.Show(this, Control.MousePosition);
+                };
+            }
+        }
     }
 
     public class CreateFileResult
     {
         public bool Success { get; set; }
         public string Message { get; set; }
+    }
+
+    public class PdfJob
+    {
+        public string DataPath { get; set; }
+        public string Docnum { get; set; }
+        public string Email { get; set; }
+        public bool Success { get; set; }
+        public DateTime? SendTime { get; set; }
+    }
+
+    public class Log
+    {
+        public DateTime Time { get; set; }
+        public string DataPath { get; set; }
+        public string Description { get; set; }
     }
 }

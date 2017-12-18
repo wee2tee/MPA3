@@ -119,5 +119,15 @@ namespace ETaxScanner.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+        /// </summary>
+        internal static System.Drawing.Icon tongue_16 {
+            get {
+                object obj = ResourceManager.GetObject("tongue_16", resourceCulture);
+                return ((System.Drawing.Icon)(obj));
+            }
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace ETaxScanner.Model
             {
                 string path_txt = string.Empty;
 
-                if (this.path.Substring(1, 2) == @":\" || this.path.StartsWith(@"\\"))
+                if ((this.path.Length >= 3 && this.path.Substring(1, 2) == @":\") || this.path.StartsWith(@"\\"))
                 {
                     path_txt = this.path;
                 }

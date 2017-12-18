@@ -9,6 +9,7 @@ using System.Text;
 using System.Windows.Forms;
 using ETaxScanner.Model;
 using MPA3.Model;
+using System.Globalization;
 
 namespace ETaxScanner.Misc
 {
@@ -213,6 +214,14 @@ namespace ETaxScanner.Misc
             else
             {
                 return string.Empty;
+            }
+        }
+
+        public static void SaveLog(this Log log)
+        {
+            using (StreamWriter writer = File.AppendText("eTax.Log"))
+            {
+                writer.WriteLine(log.Time.ToString("dd-MM-yyyy HH:mm:ss", CultureInfo.GetCultureInfo("en-US")) + "\t" + log.DataPath.PadRight(30) + "\t" + log.Description);
             }
         }
     }
