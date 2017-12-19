@@ -15,6 +15,8 @@ using System.IO;
 using MPA3.Model;
 using System.Globalization;
 using System.Data.OleDb;
+using System.Reflection;
+using System.Data.SQLite;
 
 namespace ETaxScanner
 {
@@ -32,6 +34,7 @@ namespace ETaxScanner
             NEW = 0,
             SENDED = 1
         }
+        private BindingList<Log> logs;
 
         public Form1()
         {
@@ -41,6 +44,7 @@ namespace ETaxScanner
         private void Form1_Load(object sender, EventArgs e)
         {
             this.SetControlState(FORM_MODE.EDIT);
+            this.btnShowLog.PerformClick();
         }
 
         private void SetControlState(FORM_MODE form_mode)
@@ -56,13 +60,6 @@ namespace ETaxScanner
         {
             DialogConfig conf = new DialogConfig();
             conf.ShowDialog();
-        }
-
-        private void btnSendMail_Click(object sender, EventArgs e)
-        {
-            var company_list = Helper.Sccomp();
-
-            this.CreateFileAndSendMail(@"d:\express\expressi\test", "SR0000002", "weerawat.36@gmail.com");
         }
 
         private void btnStart_Click(object sender, EventArgs e)
@@ -82,7 +79,10 @@ namespace ETaxScanner
         private void Timer_Tick(object sender, EventArgs e)
         {
             if (this.in_process)
+            {
+                //new Log { Time = DateTime.Now, DataPath = string.Empty, Description = "Skipping new job because previous job is in process" }.SaveLog();
                 return;
+            }
 
             this.in_process = true;
             this.job_list = new List<PdfJob>();
@@ -109,7 +109,6 @@ namespace ETaxScanner
                             Success = false
                         });
                     }
-                    Console.WriteLine(" ======> Scan new job completed, found " + jobs.Count.ToString() + " item(s)");
                 }
             }
 
@@ -126,6 +125,11 @@ namespace ETaxScanner
                             {
                                 Log log = new Log { Time = DateTime.Now, DataPath = this.job_list[i].DataPath, Description = "Sending document # " + this.job_list[i].Docnum + " to email " + this.job_list[i].Email + " success." };
                                 log.SaveLog();
+                                this.dgvLog.Invoke(new Action(() =>
+                                {
+                                    ((BindingList<Log>)this.dgvLog.DataSource).Add(log);
+                                    this.dgvLog.FirstDisplayedScrollingRowIndex = this.dgvLog.Rows.Count - 1;
+                                }));
 
                                 Console.WriteLine(" -> Send " + this.job_list[i].DataPath + ":" + this.job_list[i].Docnum + " success at " + DateTime.Now.ToString());
                                 continue;
@@ -136,11 +140,6 @@ namespace ETaxScanner
                             throw new Exception(send_result.Message);
                         }
                     }
-                    //foreach (var job in this.job_list)
-                    //{
-                    //    this.CreateFileAndSendMail(job.DataPath, job.Docnum, job.Email);
-
-                    //}
                 };
                 wrk.RunWorkerCompleted += delegate
                 {
@@ -150,11 +149,6 @@ namespace ETaxScanner
                 };
                 wrk.RunWorkerAsync();
             }
-
-            //Console.WriteLine(" ==> Scanned success at " + DateTime.Now.ToString());
-            //this.job_list.ForEach(j => Console.WriteLine(" ==> Data path : " + j.DataPath + " , Docnum : " + j.Docnum + " , Email : " + j.Email));
-            //Console.WriteLine(" ----------");
-            //Console.WriteLine("");
         }
 
         private void btnStop_Click(object sender, EventArgs e)
@@ -367,47 +361,85 @@ namespace ETaxScanner
             {
                 this.is_on_system_tray = true;
                 e.Cancel = true;
+
                 Hide();
                 NotifyIcon n = new NotifyIcon();
                 n.Icon = ETaxScanner.Properties.Resources.tongue_16;
                 n.Text = "eTax Scanner";
                 n.Visible = true;
-                n.BalloonTipIcon = ToolTipIcon.Info;
-                n.BalloonTipText = "Click to show menu";
-                n.Click += delegate
+
+                ContextMenu cm = new ContextMenu();
+                MenuItem mnu_show = new MenuItem("Show main window");
+                mnu_show.Click += delegate
                 {
-                    ContextMenuStrip cms = new ContextMenuStrip();
-                    ToolStripButton btn_show = new ToolStripButton("Show main window");
-                    btn_show.Click += delegate
-                    {
-                        this.Show();
-                        n.Visible = false;
-                    };
-                    cms.Items.Add(btn_show);
-                    ToolStripButton btn_exit = new ToolStripButton("Exit");
-                    btn_exit.Click += delegate
-                    {
-                        this.is_on_system_tray = true;
-                        Application.Exit();
-                        n.Visible = false;
-                    };
-                    cms.Items.Add(btn_exit);
-                    cms.Show(this, Control.MousePosition);
-                    //ContextMenu cm = new ContextMenu();
-                    //MenuItem mnu_show = new MenuItem("Show main window");
-                    //mnu_show.Click += delegate
-                    //{
-                    //    this.Show();
-                    //};
-                    //cm.MenuItems.Add(mnu_show);
-                    //MenuItem mnu_exit = new MenuItem("Exit");
-                    //mnu_exit.Click += delegate
-                    //{
-                    //    Application.Exit();
-                    //};
-                    //cm.MenuItems.Add(mnu_exit);
-                    //cm.Show(this, Control.MousePosition);
+                    this.Show();
+                    n.Visible = false;
+                    this.is_on_system_tray = false;
                 };
+                cm.MenuItems.Add(mnu_show);
+                MenuItem mnu_exit = new MenuItem("Quit");
+                mnu_exit.Click += delegate
+                {
+                    if(MessageBox.Show("Quit e-Tax Scanner", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+                    {
+                        n.Visible = false;
+                        this.Close();
+                    }
+                };
+                cm.MenuItems.Add(mnu_exit);
+                n.ContextMenu = cm;
+
+                n.ShowBalloonTip(4000, "e-Tax Scanner", "e-Tax Scanner is still running, you can show main window or quit by clicking the icon on system tray.", ToolTipIcon.Info);
+                n.BalloonTipIcon = ToolTipIcon.Info;
+                n.BalloonTipText = "Right click to show context menu";
+                n.MouseUp += delegate (object obj, MouseEventArgs ev)
+                {
+                    if(ev.Button == MouseButtons.Left)
+                    {
+                        MethodInfo mi = typeof(NotifyIcon).GetMethod("ShowContextMenu", BindingFlags.Instance | BindingFlags.NonPublic);
+                        mi.Invoke(n, null);
+                    }
+                };
+            }
+        }
+
+        private void btnShowLog_Click(object sender, EventArgs e)
+        {
+            this.logs = new BindingList<Log>(this.GetLog());
+            this.dgvLog.DataSource = logs;
+        }
+
+        private List<Log> GetLog()
+        {
+            try
+            {
+                using (SQLiteConnection conn = new SQLiteConnection("Data Source=" + Helper.GetAppFolderName() + @"\eTax.log;Version=3"))
+                {
+                    conn.Open();
+                    string date_string = this.dtLogDate.Value.ToString("yyyy-MM-dd", CultureInfo.GetCultureInfo("en-US"));
+                    string sql = "Select time, data_path, description From islog Where date(time) >= date('" + date_string + "')";
+                    SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                    SQLiteDataReader rdr = cmd.ExecuteReader();
+
+                    List<Log> logs = new List<Log>();
+
+                    while (rdr.Read())
+                    {
+                        logs.Add(new Log
+                        {
+                            Time = DateTime.Parse((string)rdr["time"], CultureInfo.GetCultureInfo("en-US")),
+                            DataPath = (string)rdr["data_path"],
+                            Description = (string)rdr["description"]
+                        });
+                    }
+                    conn.Close();
+
+                    return logs;
+                }
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
         }
     }

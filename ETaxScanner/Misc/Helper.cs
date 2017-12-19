@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using ETaxScanner.Model;
 using MPA3.Model;
 using System.Globalization;
+using System.Data.SQLite;
 
 namespace ETaxScanner.Misc
 {
@@ -219,10 +220,31 @@ namespace ETaxScanner.Misc
 
         public static void SaveLog(this Log log)
         {
-            using (StreamWriter writer = File.AppendText("eTax.Log"))
+            // Kept log in SqLite
+            if (!File.Exists("eTax.log"))
             {
-                writer.WriteLine(log.Time.ToString("dd-MM-yyyy HH:mm:ss", CultureInfo.GetCultureInfo("en-US")) + "\t" + log.DataPath.PadRight(30) + "\t" + log.Description);
+                SQLiteConnection.CreateFile(Helper.GetAppFolderName() + @"\eTax.log");
             }
+
+            using (SQLiteConnection conn = new SQLiteConnection("Data Source=" + Helper.GetAppFolderName() + @"\eTax.log;Version=3"))
+            {
+                conn.Open();
+                string sql = "Create table if not exists islog (time varchar(23), data_path varchar(150), description varchar(100))";
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                cmd.ExecuteNonQuery();
+
+                sql = "Insert into islog ('time', 'data_path', 'description') Values ('" + log.Time.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.GetCultureInfo("en-US")) + "', '" + log.DataPath + "', '" + log.Description + "')";
+                cmd = new SQLiteCommand(sql, conn);
+                cmd.ExecuteNonQuery();
+
+                conn.Close();
+            }
+
+            // Kept log in text file
+            //using (StreamWriter writer = File.AppendText("eTax.Log"))
+            //{
+            //    writer.WriteLine(log.Time.ToString("dd-MM-yyyy HH:mm:ss", CultureInfo.GetCultureInfo("en-US")) + "\t" + log.DataPath.PadRight(30) + "\t" + log.Description);
+            //}
         }
     }
 }
