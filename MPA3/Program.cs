@@ -37,7 +37,8 @@ namespace MPA3
         {
             JSON,
             XML,
-            PDF
+            PDF,
+            EXTRACT
         }
 
         static void Main(string[] args)
@@ -94,7 +95,7 @@ namespace MPA3
             //Console.WriteLine("completed.");
 
 
-            /* args.Length = 3 for XML, 4 for JSON, 8 for PDF */
+            /* args.Length = 3 for XML/EXTRACT_TO_XML, 4 for JSON, 8 for PDF */
             if (!(args != null && (args.Length == 3 || args.Length == 4 || args.Length == 8)))
             {
                 Console.WriteLine("Error : Arguments not specified completely!");
@@ -102,7 +103,7 @@ namespace MPA3
             }
             else
             {
-                if(!(args[0].ToUpper().Trim() == PROCESS_TYPE.JSON.ToString() || args[0].ToUpper().Trim() == PROCESS_TYPE.XML.ToString() || args[0].ToUpper().Trim() == PROCESS_TYPE.PDF.ToString()))
+                if(!(args[0].ToUpper().Trim() == PROCESS_TYPE.JSON.ToString() || args[0].ToUpper().Trim() == PROCESS_TYPE.XML.ToString() || args[0].ToUpper().Trim() == PROCESS_TYPE.PDF.ToString() || args[0].ToUpper().Trim() == PROCESS_TYPE.EXTRACT.ToString()))
                 {
                     Console.WriteLine("Error : Process type is incorrect!");
                     return;
@@ -200,6 +201,42 @@ namespace MPA3
                             Console.WriteLine("Error : " + result.message);
                         }
                         return;
+                    }
+
+                    // Extract to XML file
+                    if(args[0].ToUpper().Trim() == PROCESS_TYPE.EXTRACT.ToString())
+                    {
+                        if(args.Length < 3)
+                        {
+                            Console.WriteLine("Error : Arguments not specified completely!");
+                            return;
+                        }
+
+                        string pdfa3_file_path = args[1];
+                        string destination_xml_path = args[2];
+                        //string docnum = args[3];
+
+                        string command = "java";
+                        string arguments = "-jar " + AppDomain.CurrentDomain.BaseDirectory + "Extract.jar " + pdfa3_file_path + " " + destination_xml_path;
+
+                        Process process = new Process();
+                        process.StartInfo.UseShellExecute = false;
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.StartInfo.FileName = command;
+                        process.StartInfo.Arguments = arguments;
+                        process.Start();
+
+                        string output = process.StandardOutput.ReadToEnd();
+                        process.WaitForExit();
+
+                        if (output.ToLower().Contains("success"))
+                        {
+                            Console.WriteLine("Success");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error : " + output);
+                        }
                     }
                 }
                 catch (Exception ex)
