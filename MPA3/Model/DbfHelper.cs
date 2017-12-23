@@ -211,7 +211,9 @@ namespace MPA3.Model
                         //data_path = row.Field<string>("datapath").Trim(),
                         docnum = row.Field<string>("docnum").Trim(),
                         email = row.Field<string>("email").Trim(),
-                        status = row.Field<string>("status").Trim()
+                        status = row.Field<string>("status").Trim(),
+                        senddate = row.IsNull("senddate") ? null : (DateTime?)row.Field<DateTime>("senddate"),
+                        sendtime = row.IsNull("sendtime") ? "00:00:00" : (row.Field<string>("sendtime").Trim().Length < 8 ? "00:00:00" : row.Field<string>("sendtime"))
                     };
 
                     inv.Add(i);

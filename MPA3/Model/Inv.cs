@@ -13,5 +13,7 @@ namespace MPA3.Model
         public string docnum { get; set; }
         public string email { get; set; }
         public string status { get; set; }
+        public DateTime? senddate { get; set; }
+        public string sendtime { get; set; }
     }
 }

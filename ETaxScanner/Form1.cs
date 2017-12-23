@@ -80,7 +80,17 @@ namespace ETaxScanner
         {
             if (this.in_process)
             {
-                //new Log { Time = DateTime.Now, DataPath = string.Empty, Description = "Skipping new job because previous job is in process" }.SaveLog();
+                //new Log { Time = DateTime.Now, DataPath = string.Empty, Description = "Skip new job because previous job is in process" }.SaveLog();
+                return;
+            }
+
+            List<DateTimeDoJob> date_do_job = this.GetDateDoJob();
+            TimeSpan this_time = TimeSpan.Parse(DateTime.Now.ToString("HH:mm:ss", CultureInfo.GetCultureInfo("th-TH")));
+
+            // Check if current time is in working time configured.
+            if(date_do_job.Where(d => (int)d.dayOfWeek == (int)DateTime.Now.DayOfWeek && d.startTime.CompareTo(this_time) <= 0 && d.endTime.CompareTo(this_time) >= 0).FirstOrDefault() == null)
+            {
+                // Just skip this job
                 return;
             }
 
@@ -92,7 +102,7 @@ namespace ETaxScanner
                 Console.WriteLine("Cannot find sccomp.dbf, please make sure \"Express program path\" is configure correctly");
                 return;
             }
-                
+
             foreach (var comp in company_list)
             {
                 if(File.Exists(comp.abs_path + this.scanned_file_name))
@@ -106,7 +116,7 @@ namespace ETaxScanner
                             Docnum = job.docnum,
                             Email = job.email,
                             SendTime = null,
-                            Success = false
+                            //Success = false
                         });
                     }
                 }
@@ -121,9 +131,10 @@ namespace ETaxScanner
                         var send_result = this.CreateFileAndSendMail(this.job_list[i].DataPath, this.job_list[i].Docnum, this.job_list[i].Email);
                         if (send_result.Success)
                         {
+                            this.job_list[i].SendTime = DateTime.Now;
                             if(this.UpdateJobState(this.job_list[i], JOB_STATE.SENDED) == true)
                             {
-                                Log log = new Log { Time = DateTime.Now, DataPath = this.job_list[i].DataPath, Description = "Sending document # " + this.job_list[i].Docnum + " to email " + this.job_list[i].Email + " success." };
+                                Log log = new Log { Time = this.job_list[i].SendTime.Value, DataPath = this.job_list[i].DataPath, Description = "Sending document # " + this.job_list[i].Docnum + " to email " + this.job_list[i].Email + " success." };
                                 log.SaveLog();
                                 this.dgvLog.Invoke(new Action(() =>
                                 {
@@ -150,6 +161,29 @@ namespace ETaxScanner
                 wrk.RunWorkerAsync();
             }
         }
+
+        private List<DateTimeDoJob> GetDateDoJob()
+        {
+            List<DateTimeDoJob> d = new List<DateTimeDoJob>();
+            Config conf = Config.LoadConfigValue();
+            if (conf.isSunday)
+                d.Add(new DateTimeDoJob { dayOfWeek = DayOfWeek.Sunday, startTime = conf.timeFrom, endTime = conf.timeTo });
+            if (conf.isMonday)
+                d.Add(new DateTimeDoJob { dayOfWeek = DayOfWeek.Monday, startTime = conf.timeFrom, endTime = conf.timeTo });
+            if (conf.isTuesday)
+                d.Add(new DateTimeDoJob { dayOfWeek = DayOfWeek.Tuesday, startTime = conf.timeFrom, endTime = conf.timeTo });
+            if (conf.isWednesday)
+                d.Add(new DateTimeDoJob { dayOfWeek = DayOfWeek.Wednesday, startTime = conf.timeFrom, endTime = conf.timeTo });
+            if (conf.isThursday)
+                d.Add(new DateTimeDoJob { dayOfWeek = DayOfWeek.Thursday, startTime = conf.timeFrom, endTime = conf.timeTo });
+            if (conf.isFriday)
+                d.Add(new DateTimeDoJob { dayOfWeek = DayOfWeek.Friday, startTime = conf.timeFrom, endTime = conf.timeTo });
+            if (conf.isSaturday)
+                d.Add(new DateTimeDoJob { dayOfWeek = DayOfWeek.Saturday, startTime = conf.timeFrom, endTime = conf.timeTo });
+
+            return d;
+        }
+
 
         private void btnStop_Click(object sender, EventArgs e)
         {
@@ -178,7 +212,7 @@ namespace ETaxScanner
 
                 if (conn.State == ConnectionState.Open)
                 {
-                    string mySQL = "Update " + dbf_file_name + " Set Status = '" + ((int)job_state).ToString() + "' Where docnum='" + job.Docnum + "'";
+                    string mySQL = "Update " + dbf_file_name + " Set Status = '" + ((int)job_state).ToString() + "', SendDate = CTOD('" + job.SendTime.Value.ToString("MM/dd/yyyy", CultureInfo.GetCultureInfo("en-US")) + "'), SendTime = '" + job.SendTime.Value.ToString("HH:mm:ss", CultureInfo.GetCultureInfo("en-US")) + "' Where docnum='" + job.Docnum + "'";
 
                     OleDbCommand cmd = new OleDbCommand(mySQL, conn);
                     cmd.ExecuteNonQuery();
@@ -450,12 +484,19 @@ namespace ETaxScanner
         public string Message { get; set; }
     }
 
+    public class DateTimeDoJob
+    {
+        public DayOfWeek dayOfWeek { get; set; }
+        public TimeSpan startTime { get; set; }
+        public TimeSpan endTime { get; set; }
+    }
+    
     public class PdfJob
     {
         public string DataPath { get; set; }
         public string Docnum { get; set; }
         public string Email { get; set; }
-        public bool Success { get; set; }
+        //public bool Success { get; set; }
         public DateTime? SendTime { get; set; }
     }
 

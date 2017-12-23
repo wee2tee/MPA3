@@ -78,7 +78,7 @@
             this.dgvLog.Name = "dgvLog";
             this.dgvLog.RowHeadersVisible = false;
             this.dgvLog.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvLog.Size = new System.Drawing.Size(445, 215);
+            this.dgvLog.Size = new System.Drawing.Size(445, 211);
             this.dgvLog.TabIndex = 0;
             // 
             // col_time
@@ -157,7 +157,7 @@
             this.groupBox1.Controls.Add(this.dgvLog);
             this.groupBox1.Location = new System.Drawing.Point(6, 6);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(451, 265);
+            this.groupBox1.Size = new System.Drawing.Size(451, 261);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "บันทึกเหตุการณ์ทำงาน";
@@ -246,7 +246,7 @@
             this.tabControl1.Location = new System.Drawing.Point(12, 12);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(552, 303);
+            this.tabControl1.Size = new System.Drawing.Size(552, 299);
             this.tabControl1.TabIndex = 3;
             // 
             // tabPage1
@@ -258,7 +258,7 @@
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(544, 277);
+            this.tabPage1.Size = new System.Drawing.Size(544, 273);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "การทำงานหลัก";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -269,24 +269,25 @@
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(544, 277);
+            this.tabPage2.Size = new System.Drawing.Size(544, 273);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "เอกสารที่สร้างแล้ว";
+            this.tabPage2.Text = "เอกสารที่ได้รับ";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // tabCompany
             // 
-            this.tabCompany.Location = new System.Drawing.Point(6, 6);
+            this.tabCompany.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabCompany.Location = new System.Drawing.Point(3, 3);
             this.tabCompany.Name = "tabCompany";
             this.tabCompany.SelectedIndex = 0;
-            this.tabCompany.Size = new System.Drawing.Size(532, 265);
+            this.tabCompany.Size = new System.Drawing.Size(538, 267);
             this.tabCompany.TabIndex = 0;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(576, 327);
+            this.ClientSize = new System.Drawing.Size(576, 323);
             this.Controls.Add(this.tabControl1);
             this.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(222)));
             this.KeyPreview = true;
